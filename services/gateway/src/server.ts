@@ -18,7 +18,7 @@ async function buildAssets() {
     entrypoints: ["apps/web/src/main.tsx"],
     outdir: "public/assets",
     target: "browser",
-    sourcemap: "external"
+    sourcemap: "external",
   });
 }
 
@@ -45,37 +45,76 @@ function staticFile(pathname: string) {
 }
 
 async function currentUserId(cookie: string | null) {
-  const response = await fetch(`${AUTH_URL}/internal/session`, { headers: cookie ? { cookie } : {} });
+  const response = await fetch(`${AUTH_URL}/internal/session`, {
+    headers: cookie ? { cookie } : {},
+  });
   if (!response.ok) return null;
-  const data = await response.json() as { userId: number | null };
+  const data = (await response.json()) as { userId: number | null };
   return data.userId;
 }
 
 function targetFor(pathname: string) {
-  if (pathname.startsWith("/api/auth/")) return [AUTH_URL, pathname.replace(/^\/api/, "")];
-  if (pathname.startsWith("/api/posts") || pathname.startsWith("/api/search") || pathname.startsWith("/api/users")) return [SOCIAL_URL, pathname.replace(/^\/api/, "")];
-  if (pathname.startsWith("/api/conversations") || pathname.startsWith("/api/notifications")) return [REALTIME_URL, pathname.replace(/^\/api/, "")];
-  if (pathname.startsWith("/api/apps") || pathname.startsWith("/api/settings") || pathname.startsWith("/api/desktop") || pathname.startsWith("/api/minecraft")) return [PLATFORM_URL, pathname.replace(/^\/api/, "")];
-  if (pathname.startsWith("/api/browser")) return [BROWSER_URL, pathname.replace(/^\/api/, "")];
+  if (pathname.startsWith("/api/auth/"))
+    return [AUTH_URL, pathname.replace(/^\/api/, "")];
+  if (
+    pathname.startsWith("/api/posts") ||
+    pathname.startsWith("/api/search") ||
+    pathname.startsWith("/api/users")
+  )
+    return [SOCIAL_URL, pathname.replace(/^\/api/, "")];
+  if (
+    pathname.startsWith("/api/conversations") ||
+    pathname.startsWith("/api/notifications")
+  )
+    return [REALTIME_URL, pathname.replace(/^\/api/, "")];
+  if (
+    pathname.startsWith("/api/apps") ||
+    pathname.startsWith("/api/settings") ||
+    pathname.startsWith("/api/desktop") ||
+    pathname.startsWith("/api/minecraft")
+  )
+    return [PLATFORM_URL, pathname.replace(/^\/api/, "")];
+  if (pathname.startsWith("/api/browser"))
+    return [BROWSER_URL, pathname.replace(/^\/api/, "")];
   return null;
 }
 
-async function proxy(request: Request, base: string, path: string, userId: number | null) {
+async function proxy(
+  request: Request,
+  base: string,
+  path: string,
+  userId: number | null,
+) {
   const url = new URL(request.url);
   const headers = new Headers(request.headers);
+  // Always strip the client-supplied x-user-id header before forwarding.
+  // The gateway is the only authority that may set this header, based on
+  // the verified session cookie from the auth service.
+  headers.delete("x-user-id");
   if (userId) headers.set("x-user-id", String(userId));
   headers.delete("host");
   const response = await fetch(`${base}${path}${url.search}`, {
     method: request.method,
     headers,
-    body: request.method === "GET" || request.method === "HEAD" ? undefined : request.body,
-    redirect: "manual"
+    body:
+      request.method === "GET" || request.method === "HEAD"
+        ? undefined
+        : request.body,
+    redirect: "manual",
   });
   const responseHeaders = new Headers(response.headers);
-  if (request.method !== "GET" && (path.includes("/messages") || path.includes("/posts"))) {
-    broadcast({ type: path.includes("/messages") ? "message.changed" : "post.changed" });
+  if (
+    request.method !== "GET" &&
+    (path.includes("/messages") || path.includes("/posts"))
+  ) {
+    broadcast({
+      type: path.includes("/messages") ? "message.changed" : "post.changed",
+    });
   }
-  return new Response(response.body, { status: response.status, headers: responseHeaders });
+  return new Response(response.body, {
+    status: response.status,
+    headers: responseHeaders,
+  });
 }
 
 function broadcast(message: Record<string, unknown>) {
@@ -98,10 +137,15 @@ const server = Bun.serve({
     if (url.pathname.startsWith("/api/")) {
       const target = targetFor(url.pathname);
       if (!target) return json({ error: "Gateway route not found" }, 404);
-      const userId = target[0] === AUTH_URL ? null : await currentUserId(request.headers.get("cookie"));
+      const userId =
+        target[0] === AUTH_URL
+          ? null
+          : await currentUserId(request.headers.get("cookie"));
       return proxy(request, target[0], target[1], userId);
     }
-    return new Response(indexHtml, { headers: { "content-type": "text/html; charset=utf-8" } });
+    return new Response(indexHtml, {
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
   },
   websocket: {
     open(ws) {
@@ -112,8 +156,8 @@ const server = Bun.serve({
       clients.delete(ws);
       broadcast({ type: "system.online", count: clients.size });
     },
-    message() {}
-  }
+    message() {},
+  },
 });
 
 console.log(`gateway listening on http://localhost:${server.port}`);
