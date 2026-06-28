@@ -37,46 +37,102 @@ export function migrateRealtime() {
 }
 
 export function seedRealtime() {
-  const userCount = db.query("SELECT COUNT(*) AS count FROM users").get() as { count: number };
-  const conversationCount = db.query("SELECT COUNT(*) AS count FROM conversations").get() as { count: number };
+  const userCount = db.query("SELECT COUNT(*) AS count FROM users").get() as {
+    count: number;
+  };
+  const conversationCount = db
+    .query("SELECT COUNT(*) AS count FROM conversations")
+    .get() as { count: number };
   if (userCount.count < 3 || conversationCount.count > 0) return;
-  db.prepare("INSERT INTO conversations (title, type) VALUES (?, ?)").run("GOpost Friends", "group");
-  for (const userId of [1, 2, 3]) db.prepare("INSERT INTO conversation_members VALUES (?, ?)").run(1, userId);
-  const insert = db.prepare("INSERT INTO messages (conversation_id, sender_id, body) VALUES (?, ?, ?)");
+  db.prepare("INSERT INTO conversations (title, type) VALUES (?, ?)").run(
+    "GOpost Friends",
+    "group",
+  );
+  for (const userId of [1, 2, 3])
+    db.prepare("INSERT INTO conversation_members VALUES (?, ?)").run(1, userId);
+  const insert = db.prepare(
+    "INSERT INTO messages (conversation_id, sender_id, body) VALUES (?, ?, ?)",
+  );
   insert.run(1, 2, "Did you see the new dock?");
   insert.run(1, 1, "Store and Minecraft are already pinned.");
   insert.run(1, 3, "macOS Dev 3.4.6 is online.");
 }
 
+export function isMember(conversationId: number, userId: number): boolean {
+  return !!db
+    .query(
+      "SELECT 1 FROM conversation_members WHERE conversation_id = ? AND user_id = ?",
+    )
+    .get(conversationId, userId);
+}
+
 export function conversationRows(userId: number) {
-  return db.query(`
+  return db
+    .query(
+      `
     SELECT c.id, c.title, c.type,
       (SELECT COUNT(*) FROM notifications n WHERE n.user_id = ? AND n.read = 0 AND n.type = 'message') AS unreadCount
     FROM conversations c
     JOIN conversation_members cm ON cm.conversation_id = c.id
     WHERE cm.user_id = ?
     ORDER BY c.id
-  `).all(userId, userId);
+  `,
+    )
+    .all(userId, userId);
 }
 
 export function messageRows(conversationId: number) {
-  return db.query(`
+  return db
+    .query(
+      `
     SELECT m.id, m.conversation_id AS conversationId, m.body, m.created_at AS createdAt,
       u.id AS authorId, u.username, u.display_name AS displayName, u.avatar_color AS avatarColor
     FROM messages m JOIN users u ON u.id = m.sender_id
     WHERE m.conversation_id = ?
     ORDER BY m.id
-  `).all(conversationId).map((row: any) => ({
-    id: row.id,
-    conversationId: row.conversationId,
-    body: row.body,
-    createdAt: row.createdAt,
-    sender: { id: row.authorId, username: row.username, displayName: row.displayName, avatarColor: row.avatarColor }
-  }));
+  `,
+    )
+    .all(conversationId)
+    .map((row: any) => ({
+      id: row.id,
+      conversationId: row.conversationId,
+      body: row.body,
+      createdAt: row.createdAt,
+      sender: {
+        id: row.authorId,
+        username: row.username,
+        displayName: row.displayName,
+        avatarColor: row.avatarColor,
+      },
+    }));
 }
 
-export function notifyOthers(conversationId: number, senderId: number, body: string) {
-  const members = db.query("SELECT user_id AS userId FROM conversation_members WHERE conversation_id = ? AND user_id != ?").all(conversationId, senderId) as { userId: number }[];
-  const insert = db.prepare("INSERT INTO notifications (user_id, type, title, body) VALUES (?, ?, ?, ?)");
-  for (const member of members) insert.run(member.userId, "message", "New Messenger message", body);
+export function sendMessage(
+  conversationId: number,
+  senderId: number,
+  messageBody: string,
+) {
+  db.transaction(() => {
+    db.prepare(
+      "INSERT INTO messages (conversation_id, sender_id, body) VALUES (?, ?, ?)",
+    ).run(conversationId, senderId, messageBody);
+    notifyOthers(conversationId, senderId, messageBody);
+  })();
+}
+
+export function notifyOthers(
+  conversationId: number,
+  senderId: number,
+  body: string,
+) {
+  const members = db
+    .query(
+      "SELECT user_id AS userId FROM conversation_members WHERE conversation_id = ? AND user_id != ?",
+    )
+    .all(conversationId, senderId) as { userId: number }[];
+  const insert = db.prepare(
+    "INSERT INTO notifications (user_id, type, title, body) VALUES (?, ?, ?, ?)",
+  );
+  for (const member of members)
+    insert.run(member.userId, "message", "New Messenger message", body);
 }
