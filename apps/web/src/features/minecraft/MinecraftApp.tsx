@@ -1,12 +1,24 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { MinecraftProfile, MinecraftWorld } from "../../lib/types";
 import { api } from "../../lib/api";
+import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { Badge, Button, Card } from "../../lib/ui";
 
 export function MinecraftApp() {
-  const profile = useQuery({ queryKey: ["minecraft-profile"], queryFn: () => api<{ profile: MinecraftProfile }>("/api/minecraft/profile") });
-  const worlds = useQuery({ queryKey: ["minecraft-worlds"], queryFn: () => api<{ worlds: MinecraftWorld[] }>("/api/minecraft/worlds") });
-  const launch = useMutation({ mutationFn: () => api<{ launch: { message: string } }>("/api/minecraft/launch", { method: "POST" }) });
+  const profile = useQuery({
+    queryKey: ["minecraft-profile"],
+    queryFn: () => api<{ profile: MinecraftProfile }>("/api/minecraft/profile"),
+  });
+  const worlds = useQuery({
+    queryKey: ["minecraft-worlds"],
+    queryFn: () => api<{ worlds: MinecraftWorld[] }>("/api/minecraft/worlds"),
+  });
+  const launch = useMutation({
+    mutationFn: () =>
+      api<{ launch: { message: string } }>("/api/minecraft/launch", {
+        method: "POST",
+      }),
+  });
 
   return (
     <div>
@@ -15,11 +27,47 @@ export function MinecraftApp() {
         {launch.data?.launch.message ?? profile.data?.profile.status ?? "Ready"}
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <Button onClick={() => launch.mutate()}>Play Demo</Button>
+        <Button onClick={() => launch.mutate()} disabled={launch.isPending}>
+          {launch.isPending ? "Launching..." : "Play Demo"}
+        </Button>
         <Badge>{profile.data?.profile.version ?? "Dev 3.4.6"}</Badge>
       </div>
+      <div className="mt-3 grid gap-2">
+        {profile.isError && (
+          <ErrorNotice
+            error={profile.error}
+            message="Minecraft profile is temporarily unavailable."
+          />
+        )}
+        {launch.isError && <ErrorNotice error={launch.error} />}
+      </div>
       <div className="mt-4 grid gap-2">
-        {worlds.data?.worlds.map((world) => <Card key={world.id} className="flex items-center justify-between p-3"><b>{world.name}</b><span className="text-sm text-slate-600">{world.mode} - {world.lastPlayed}</span></Card>)}
+        {worlds.isLoading && <Card className="p-4">Loading worlds...</Card>}
+        {worlds.isError && (
+          <QueryErrorCard
+            title="World list failed to load"
+            error={worlds.error}
+            onRetry={() => void worlds.refetch()}
+          />
+        )}
+        {!worlds.isLoading &&
+          !worlds.isError &&
+          worlds.data?.worlds.map((world) => (
+            <Card
+              key={world.id}
+              className="flex items-center justify-between p-3"
+            >
+              <b>{world.name}</b>
+              <span className="text-sm text-slate-600">
+                {world.mode} - {world.lastPlayed}
+              </span>
+            </Card>
+          ))}
+        {!worlds.isLoading &&
+          !worlds.isError &&
+          worlds.data?.worlds.length === 0 && (
+            <Card className="p-4">No worlds yet.</Card>
+          )}
       </div>
     </div>
   );

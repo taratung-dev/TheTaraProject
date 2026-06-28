@@ -11,6 +11,13 @@ const BROWSER_URL = process.env.BROWSER_URL ?? "http://localhost:4105";
 
 const clients = new Set<ServerWebSocket<unknown>>();
 
+class UpstreamUnavailableError extends Error {
+  constructor(readonly service: string) {
+    super(`${service} service unavailable`);
+    this.name = "UpstreamUnavailableError";
+  }
+}
+
 async function buildAssets() {
   if (process.env.SKIP_BUILD === "1") return;
   await Bun.$`bunx tailwindcss -c tailwind.config.ts -i apps/web/src/styles.css -o public/assets/styles.css`;
@@ -45,37 +52,47 @@ function staticFile(pathname: string) {
 }
 
 async function currentUserId(cookie: string | null) {
-  const response = await fetch(`${AUTH_URL}/internal/session`, {
-    headers: cookie ? { cookie } : {},
-  });
-  if (!response.ok) return null;
+  let response: Response;
+  try {
+    response = await fetch(`${AUTH_URL}/internal/session`, {
+      headers: cookie ? { cookie } : {},
+    });
+  } catch {
+    throw new UpstreamUnavailableError("auth");
+  }
+
+  if (!response.ok) {
+    if (response.status >= 500) throw new UpstreamUnavailableError("auth");
+    return null;
+  }
+
   const data = (await response.json()) as { userId: number | null };
   return data.userId;
 }
 
 function targetFor(pathname: string) {
   if (pathname.startsWith("/api/auth/"))
-    return [AUTH_URL, pathname.replace(/^\/api/, "")];
+    return [AUTH_URL, pathname.replace(/^\/api/, ""), "auth"] as const;
   if (
     pathname.startsWith("/api/posts") ||
     pathname.startsWith("/api/search") ||
     pathname.startsWith("/api/users")
   )
-    return [SOCIAL_URL, pathname.replace(/^\/api/, "")];
+    return [SOCIAL_URL, pathname.replace(/^\/api/, ""), "social"] as const;
   if (
     pathname.startsWith("/api/conversations") ||
     pathname.startsWith("/api/notifications")
   )
-    return [REALTIME_URL, pathname.replace(/^\/api/, "")];
+    return [REALTIME_URL, pathname.replace(/^\/api/, ""), "realtime"] as const;
   if (
     pathname.startsWith("/api/apps") ||
     pathname.startsWith("/api/settings") ||
     pathname.startsWith("/api/desktop") ||
     pathname.startsWith("/api/minecraft")
   )
-    return [PLATFORM_URL, pathname.replace(/^\/api/, "")];
+    return [PLATFORM_URL, pathname.replace(/^\/api/, ""), "platform"] as const;
   if (pathname.startsWith("/api/browser"))
-    return [BROWSER_URL, pathname.replace(/^\/api/, "")];
+    return [BROWSER_URL, pathname.replace(/^\/api/, ""), "browser"] as const;
   return null;
 }
 
@@ -83,6 +100,7 @@ async function proxy(
   request: Request,
   base: string,
   path: string,
+  service: string,
   userId: number | null,
 ) {
   const url = new URL(request.url);
@@ -93,15 +111,22 @@ async function proxy(
   headers.delete("x-user-id");
   if (userId) headers.set("x-user-id", String(userId));
   headers.delete("host");
-  const response = await fetch(`${base}${path}${url.search}`, {
-    method: request.method,
-    headers,
-    body:
-      request.method === "GET" || request.method === "HEAD"
-        ? undefined
-        : request.body,
-    redirect: "manual",
-  });
+
+  let response: Response;
+  try {
+    response = await fetch(`${base}${path}${url.search}`, {
+      method: request.method,
+      headers,
+      body:
+        request.method === "GET" || request.method === "HEAD"
+          ? undefined
+          : request.body,
+      redirect: "manual",
+    });
+  } catch {
+    throw new UpstreamUnavailableError(service);
+  }
+
   const responseHeaders = new Headers(response.headers);
   if (
     request.method !== "GET" &&
@@ -137,11 +162,23 @@ const server = Bun.serve({
     if (url.pathname.startsWith("/api/")) {
       const target = targetFor(url.pathname);
       if (!target) return json({ error: "Gateway route not found" }, 404);
-      const userId =
-        target[0] === AUTH_URL
-          ? null
-          : await currentUserId(request.headers.get("cookie"));
-      return proxy(request, target[0], target[1], userId);
+
+      try {
+        const userId =
+          target[2] === "auth"
+            ? null
+            : await currentUserId(request.headers.get("cookie"));
+        return await proxy(request, target[0], target[1], target[2], userId);
+      } catch (error) {
+        if (error instanceof UpstreamUnavailableError) {
+          console.error("Gateway upstream request failed", {
+            service: error.service,
+            path: url.pathname,
+          });
+          return json({ error: "Upstream service unavailable" }, 502);
+        }
+        throw error;
+      }
     }
     return new Response(indexHtml, {
       headers: { "content-type": "text/html; charset=utf-8" },
