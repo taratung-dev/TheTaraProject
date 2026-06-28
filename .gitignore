@@ -58,3 +58,11 @@ Thumbs.db
 
 # Typescript
 *.tsbuildinfo
+
+# SQLite WAL sidecars (auto-created at runtime, not source)
+data/*.sqlite-shm
+data/*.sqlite-wal
+
+# Local scratch / debug files
+*.tmp
+rebase_out*.txt
