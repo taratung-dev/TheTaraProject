@@ -1,0 +1,628 @@
+/* apps/web/src/styles.css */
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    color: #17202a;
+    margin: 0;
+    font-family: Trebuchet MS, Segoe UI, Arial, sans-serif;
+  }
+
+  button, input, textarea {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .bg-wallpaper {
+    background: radial-gradient(circle at 18% 18%, #ffffff94, #0000 22%), radial-gradient(circle at 78% 24%, #ffd77ab8, #0000 25%), radial-gradient(circle at 68% 78%, #5fd2bea8, #0000 29%), linear-gradient(135deg, #4e8cff 0%, #64d1c6 42%, #f8d66d 100%);
+  }
+
+  .bg-wallpaper-sunset {
+    background: radial-gradient(circle at 16% 22%, #fff9, #0000 23%), radial-gradient(circle at 80% 20%, #ffb86cb3, #0000 25%), linear-gradient(135deg, #ff7a59 0%, #ffd166 48%, #3a86ff 100%);
+  }
+
+  .bg-blocks {
+    background: linear-gradient(90deg, #ffffff14 1px, #0000 1px) 0 0 / 24px 24px, linear-gradient(#ffffff14 1px, #0000 1px) 0 0 / 24px 24px, linear-gradient(#6fc15c 0 50%, #7a5232 50% 100%);
+  }
+
+  .bg-gopost-grid {
+    background: linear-gradient(90deg, #2f76d214 1px, #0000 1px) 0 0 / 22px 22px, linear-gradient(#2f76d214 1px, #0000 1px) 0 0 / 22px 22px, linear-gradient(#dcecff, #f7fbff 420px, #e8eef5);
+  }
+}
+
+@layer components {
+  .gp-page {
+    color: #1f2d3d;
+    background: linear-gradient(90deg, #2f76d214 1px, #0000 1px) 0 0 / 22px 22px, linear-gradient(#2f76d214 1px, #0000 1px) 0 0 / 22px 22px, linear-gradient(#dcecff, #f7fbff 420px, #e8eef5);
+    min-height: 100%;
+    font-family: Tahoma, Verdana, Segoe UI, sans-serif;
+    font-size: 14px;
+  }
+
+  .gp-topbar {
+    position: sticky;
+    z-index: 10;
+    color: #fff;
+    background: linear-gradient(#3d8af0, #1d4f9e);
+    border-bottom: 1px solid #153b78;
+    top: 0;
+    box-shadow: 0 2px 8px #1f2d3d59;
+  }
+
+  .gp-topbar-inner {
+    display: flex;
+    align-items:  center;
+    gap: 14px;
+    width: min(1120px, 100% - 24px);
+    min-height: 54px;
+    margin: 0 auto;
+  }
+
+  .gp-logo {
+    text-shadow: 0 2px #0f3470;
+    white-space: nowrap;
+    font-family: Georgia, Times New Roman, serif;
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .gp-search {
+    color: #1f2d3d;
+    font: inherit;
+    background: #fff;
+    border: 1px solid #143b79;
+    border-radius: 3px;
+    flex: 1;
+    min-width: 120px;
+    height: 34px;
+    padding: 0 12px;
+    box-shadow: inset 0 2px 3px #00000024;
+  }
+
+  .gp-nav {
+    display: flex;
+    align-items:  center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  .gp-nav span {
+    background: #ffffff1f;
+    border-radius: 3px;
+    padding: 8px 10px;
+    box-shadow: inset 0 1px #ffffff2e;
+  }
+
+  .gp-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) 250px;
+    align-items:  start;
+    gap: 18px;
+    width: min(1120px, 100% - 24px);
+    margin: 22px auto 36px;
+  }
+
+  .gp-panel, .gp-composer, .gp-post {
+    background: #fff;
+    border: 1px solid #c8d3e0;
+    border-radius: 4px;
+    box-shadow: 0 2px #1f2d3d14;
+  }
+
+  .gp-panel {
+    padding: 14px;
+  }
+
+  .gp-profile {
+    text-align: center;
+  }
+
+  .gp-avatar {
+    display: grid;
+    color: #fff;
+    text-shadow: 0 1px 1px #00000040;
+    background: linear-gradient(135deg, #ffd166, #f25f8c);
+    border-radius: 4px;
+    flex: none;
+    place-items:  center;
+    width: 44px;
+    height: 44px;
+    font-weight: bold;
+  }
+
+  .gp-avatar.gp-big {
+    border: 4px solid #fff;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 10px;
+    font-size: 36px;
+    box-shadow: 0 0 0 1px #c8d3e0, 0 3px #1f2d3d1f;
+  }
+
+  .gp-page h1, .gp-page h2, .gp-page p {
+    margin-top: 0;
+  }
+
+  .gp-page h1 {
+    margin-bottom: 4px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .gp-page h2 {
+    color: #1d4f9e;
+    border-bottom: 1px solid #c8d3e0;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .gp-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .gp-stat {
+    text-align: center;
+    background: #edf3fb;
+    border: 1px solid #d7e3f2;
+    border-radius: 3px;
+    padding: 8px 4px;
+  }
+
+  .gp-stat b {
+    display: block;
+    color: #1d4f9e;
+    font-size: 18px;
+  }
+
+  .gp-menu {
+    display: grid;
+    text-align: left;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .gp-menu a {
+    color: #1f2d3d;
+    text-decoration: none;
+    border-radius: 3px;
+    padding: 8px 9px;
+  }
+
+  .gp-menu a:hover {
+    color: #1d4f9e;
+    background: #edf3fb;
+  }
+
+  .gp-composer {
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .gp-composer-title {
+    color: #1d4f9e;
+    background: linear-gradient(#f8fbff, #e6effa);
+    border-bottom: 1px solid #c8d3e0;
+    padding: 9px 12px;
+    font-weight: bold;
+  }
+
+  .gp-composer textarea, .gp-edit-box textarea {
+    resize: vertical;
+    color: #1f2d3d;
+    outline: none;
+    font: inherit;
+    border: 0;
+    width: 100%;
+    min-height: 78px;
+    padding: 13px;
+  }
+
+  .gp-readonly {
+    color: #6c7a89;
+    padding: 13px;
+    font-weight: bold;
+  }
+
+  .gp-composer-actions {
+    display: flex;
+    background: #f8fafc;
+    border-top: 1px solid #c8d3e0;
+    justify-content: space-between;
+    align-items:  center;
+    padding: 10px 12px;
+  }
+
+  .gp-tool-row {
+    display: flex;
+    color: #6c7a89;
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .gp-tool-row span {
+    background: #fff;
+    border: 1px solid #d7e3f2;
+    border-radius: 3px;
+    padding: 5px 7px;
+  }
+
+  .gp-post-button {
+    color: #fff;
+    cursor: pointer;
+    background: linear-gradient(#40b36d, #2e8b57);
+    border: 1px solid #18427e;
+    border-radius: 3px;
+    padding: 8px 16px;
+    font-weight: bold;
+    box-shadow: inset 0 1px #ffffff47;
+  }
+
+  .gp-post-button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .gp-feed {
+    display: grid;
+    gap: 12px;
+  }
+
+  .gp-post {
+    animation: gp-pop-in .42s ease both;
+    padding: 13px;
+  }
+
+  .gp-post:nth-child(2n) .gp-avatar {
+    background: linear-gradient(135deg, #2f76d2, #55c6ff) !important;
+  }
+
+  .gp-post:nth-child(3n) .gp-avatar {
+    background: linear-gradient(135deg, #38a169, #f2c94c) !important;
+  }
+
+  .gp-post:nth-child(4n) .gp-avatar {
+    background: linear-gradient(135deg, #f2992e, #f25f8c) !important;
+  }
+
+  .gp-post-head {
+    display: flex;
+    align-items:  center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .gp-name {
+    color: #1d4f9e;
+    font-weight: bold;
+  }
+
+  .gp-meta {
+    color: #6c7a89;
+    font-size: 12px;
+  }
+
+  .gp-post p {
+    margin-bottom: 10px;
+    line-height: 1.45;
+  }
+
+  .gp-photo {
+    display: grid;
+    background: linear-gradient(135deg, #ffffff73, #fff0), var(--accent);
+    color: #fff;
+    text-shadow: 0 2px 4px #00000047;
+    border: 1px solid #ccd8e6;
+    border-radius: 3px;
+    place-items:  center;
+    min-height: 130px;
+    margin: 10px 0;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .gp-post-actions {
+    display: flex;
+    color: #1d4f9e;
+    border-top: 1px solid #edf1f6;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .gp-post-actions button {
+    color: #1d4f9e;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-weight: bold;
+  }
+
+  .gp-post-actions button:disabled {
+    color: #8da0b6;
+    cursor: not-allowed;
+  }
+
+  .gp-tag {
+    color: #6c7a89;
+    background: #edf3fb;
+    border: 1px solid #d7e3f2;
+    border-radius: 12px;
+    padding: 3px 7px;
+    font-size: 11px;
+    font-weight: normal;
+  }
+
+  .gp-comments {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .gp-comments div {
+    background: #f8fafc;
+    border-radius: 3px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .gp-comment-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .gp-comment-box input {
+    border: 1px solid #c8d3e0;
+    border-radius: 3px;
+    flex: 1;
+    min-width: 0;
+    padding: 8px;
+  }
+
+  .gp-comment-box button {
+    color: #1d4f9e;
+    background: #fff;
+    border: 1px solid #d7e3f2;
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-weight: bold;
+  }
+
+  .gp-trend-list, .gp-friend-list {
+    display: grid;
+    list-style: none;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .gp-trend-list li {
+    border-bottom: 1px solid #edf1f6;
+    padding-bottom: 9px;
+  }
+
+  .gp-trend-list b {
+    display: block;
+    color: #1d4f9e;
+  }
+
+  .gp-friends-panel {
+    margin-top: 14px;
+  }
+
+  .gp-friend-list li {
+    display: flex;
+    align-items:  center;
+    gap: 8px;
+  }
+
+  .gp-mini {
+    background: linear-gradient(135deg, #f2992e, #f25f8c);
+    border-radius: 3px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .gp-ad {
+    text-align: center;
+    color: #806000;
+    background: #fffdf2;
+    border: 1px dashed #a9bdd4;
+    margin-top: 14px;
+    padding: 14px;
+    font-weight: bold;
+  }
+
+  .gp-footer {
+    color: #6c7a89;
+    text-align: center;
+    width: min(1120px, 100% - 24px);
+    margin: 0 auto 26px;
+    font-size: 12px;
+  }
+
+  @keyframes gp-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .gp-embedded .gp-topbar {
+    top: 0;
+  }
+
+  .gp-embedded .gp-layout {
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 12px;
+    width: calc(100% - 16px);
+    margin-top: 14px;
+  }
+
+  .gp-embedded .gp-right-col {
+    display: none;
+  }
+
+  .app-tile {
+    display: grid;
+    color: #fff;
+    text-shadow: 0 1px 2px #00000059;
+    border-radius: 1rem;
+    place-items:  center;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: .75rem;
+    font-weight: 900;
+    box-shadow: inset 0 1px #ffffff8c, 0 9px 18px #12263f42;
+  }
+
+  .app-tile.gopost, .gopost.app-tile {
+    background: linear-gradient(135deg, #ff5f8f, #2f80ed);
+  }
+
+  .app-tile.store, .store.app-tile {
+    background: linear-gradient(135deg, #36d1dc, #2f80ed);
+  }
+
+  .app-tile.settings, .settings.app-tile {
+    background: linear-gradient(135deg, #95a5a6, #34495e);
+  }
+
+  .app-tile.minecraft, .minecraft.app-tile {
+    background: linear-gradient(135deg, #7ac74f 0 48%, #8b5a2b 48% 100%);
+  }
+
+  .app-tile.messenger, .messenger.app-tile {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+  }
+
+  .app-tile.browser, .browser.app-tile {
+    background: linear-gradient(135deg, #2f80ed, #36d1dc 55%, #27ae60);
+  }
+
+  .app-tile.notes, .notes.app-tile {
+    background: linear-gradient(135deg, #f2994a, #f2c94c);
+  }
+
+  .app-tile.paint, .paint.app-tile {
+    background: linear-gradient(135deg, #bb6bd9, #f25f8c);
+  }
+
+  .window.gopost {
+    width: min(920px, 100vw - 2rem);
+    top: 4%;
+    left: 2%;
+  }
+
+  .window.store {
+    width: min(620px, 100vw - 2rem);
+    top: 6%;
+    right: 4%;
+  }
+
+  .window.settings {
+    width: min(440px, 100vw - 2rem);
+    top: 18%;
+    left: 16%;
+  }
+
+  .window.minecraft {
+    width: min(600px, 100vw - 2rem);
+    top: 10%;
+    left: 28%;
+  }
+
+  .window.messenger {
+    width: min(640px, 100vw - 2rem);
+    top: 18%;
+    right: 4%;
+  }
+
+  .window.browser {
+    width: min(980px, 100vw - 2rem);
+    top: 7%;
+    left: 8%;
+  }
+
+  .window.notes, .window.paint {
+    width: min(440px, 100vw - 2rem);
+    top: 24%;
+    left: 24%;
+  }
+
+  @media (max-width: 820px) {
+    .gp-layout, .gp-embedded .gp-layout {
+      grid-template-columns: 1fr;
+      width: calc(100% - 16px);
+    }
+
+    .gp-right-col, .gp-nav {
+      display: none;
+    }
+
+    .desktop-root {
+      overflow: auto;
+    }
+
+    .window-layer {
+      position: static;
+      margin-top: 1rem;
+    }
+
+    .window, .window.gopost, .window.store, .window.settings, .window.minecraft, .window.messenger, .window.browser, .window.notes, .window.paint {
+      position: static;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .gp-topbar-inner, .gp-layout, .gp-footer {
+      width: calc(100% - 16px);
+    }
+
+    .gp-topbar-inner {
+      flex-wrap: wrap;
+      padding: 9px 0;
+    }
+
+    .gp-logo {
+      width: 100%;
+      font-size: 30px;
+    }
+
+    .gp-composer-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .gp-tool-row, .gp-post-actions {
+      flex-wrap: wrap;
+    }
+  }
+}
