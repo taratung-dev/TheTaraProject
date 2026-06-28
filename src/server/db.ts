@@ -1,98 +1,22 @@
 import { Database } from "bun:sqlite";
+import { migrateAuth } from "../../services/auth/src/repo";
+import { migrateSocial } from "../../services/social/src/repo";
+import { migrateRealtime } from "../../services/realtime/src/repo";
+import { migratePlatform } from "../../services/platform/src/repo";
+import { migrateBrowser } from "../../services/browser/src/repo";
 
 export const db = new Database("data/platform.sqlite", { create: true });
 db.run("PRAGMA foreign_keys = ON");
 
 export function migrate() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT NOT NULL UNIQUE,
-      display_name TEXT NOT NULL,
-      password_hash TEXT NOT NULL,
-      avatar_color TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS sessions (
-      token_hash TEXT PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      expires_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      body TEXT NOT NULL,
-      image_style TEXT,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-      author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      body TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS likes (
-      post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      PRIMARY KEY (post_id, user_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS conversations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      type TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS conversation_members (
-      conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      PRIMARY KEY (conversation_id, user_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-      sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      body TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS apps (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      icon TEXT NOT NULL,
-      description TEXT NOT NULL,
-      category TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS installed_apps (
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      app_id TEXT NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
-      PRIMARY KEY (user_id, app_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS user_settings (
-      user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-      wallpaper TEXT NOT NULL,
-      dock_style TEXT NOT NULL,
-      notifications INTEGER NOT NULL,
-      classic_sounds INTEGER NOT NULL,
-      dark_mode INTEGER NOT NULL DEFAULT 0
-    );
-
-    CREATE TABLE IF NOT EXISTS minecraft_worlds (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      name TEXT NOT NULL,
-      mode TEXT NOT NULL,
-      last_played TEXT NOT NULL
-    );
-  `);
+  // All DDL is defined in service repos — call their migrate functions.
+  // Each service opens its own connection to the same database file,
+  // so tables are created once in the shared SQLite file.
+  migrateAuth();
+  migrateSocial();
+  migrateRealtime();
+  migratePlatform();
+  migrateBrowser();
 }
 
 export async function seed() {
@@ -294,8 +218,11 @@ export async function seed() {
 
 export function resetForTests() {
   db.exec(`
+    DELETE FROM browser_history; DELETE FROM browser_bookmarks; DELETE FROM browser_settings;
+    DELETE FROM notifications;
     DELETE FROM messages; DELETE FROM conversation_members; DELETE FROM conversations;
-    DELETE FROM minecraft_worlds; DELETE FROM user_settings; DELETE FROM installed_apps;
+    DELETE FROM desktop_state; DELETE FROM minecraft_worlds;
+    DELETE FROM user_settings; DELETE FROM installed_apps;
     DELETE FROM apps; DELETE FROM likes; DELETE FROM comments; DELETE FROM posts;
     DELETE FROM sessions; DELETE FROM users;
     DELETE FROM sqlite_sequence;
