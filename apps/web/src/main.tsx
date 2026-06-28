@@ -14,6 +14,7 @@ import type { Session } from "./lib/types";
 import { api, apiErrorMessage } from "./lib/api";
 import { ErrorBoundary } from "./lib/ErrorBoundary";
 import { FeedbackToasts, QueryErrorCard, reportUiError } from "./lib/feedback";
+import { Router, useRouter, Route } from "./lib/router";
 import { Button, Card, Input, Tabs } from "./lib/ui";
 import { DesktopShell } from "./features/desktop/DesktopShell";
 import { GOpostClassic } from "./features/gopost/GOpostClassic";
@@ -42,19 +43,22 @@ function Root() {
         title="The app crashed"
         fallbackClassName="mx-auto mt-10 w-full max-w-xl p-6"
       >
-        <App />
+        <Router>
+          <App />
+        </Router>
       </ErrorBoundary>
     </QueryClientProvider>
   );
 }
 
 function App() {
+  const { pathname } = useRouter();
   const session = useQuery({
     queryKey: ["session"],
     queryFn: () => api<Session>("/api/auth/me"),
   });
 
-  if (location.pathname === "/gopost") {
+  if (pathname === "/gopost") {
     if (session.isLoading)
       return (
         <div className="grid min-h-screen place-items-center bg-gopost-grid font-display font-bold text-ocean">
@@ -92,31 +96,30 @@ function App() {
         />
       </main>
     );
-  if (!session.data?.user) return <LoginScreen />;
+  if (!session.data?.user) return <AuthForm />;
   return <DesktopShell user={session.data.user} />;
 }
 
-function LoginScreen() {
-  const [mode, setMode] = useState("Login");
-  const [username, setUsername] = useState("demo");
-  const [displayName, setDisplayName] = useState("Tara Games");
-  const [password, setPassword] = useState("demo123");
-  const [error, setError] = useState("");
+function AuthForm() {
   const queryClient = useQueryClient();
+  const [mode, setMode] = useState<"Login" | "Sign Up">("Login");
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const auth = useMutation({
-    mutationFn: async () => {
-      const path = mode === "Login" ? "/api/auth/login" : "/api/auth/signup";
-      const payload =
-        mode === "Login"
-          ? { username, password }
-          : { username, displayName, password };
-      return api<Session>(path, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    },
-    onSuccess: (data) => queryClient.setQueryData(["session"], data),
+    mutationFn: () =>
+      mode === "Login"
+        ? api("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+          })
+        : api("/api/auth/signup", {
+            method: "POST",
+            body: JSON.stringify({ username, displayName, password }),
+          }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["session"] }),
     onError: (err) => setError(apiErrorMessage(err, "Authentication failed")),
   });
 
@@ -124,18 +127,18 @@ function LoginScreen() {
 
   return (
     <main className="grid min-h-screen place-items-center bg-wallpaper p-4 font-display">
-      <Card className="w-full max-w-md p-6 shadow-glass">
-        <div className="text-sm font-bold text-ocean">macOS Dev 3.4.6</div>
-        <h1 className="mt-2 text-4xl font-black text-ink">GOpost! Platform</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Sign in to open the desktop, Store, GOpost, Messenger, Settings, and
-          Minecraft Launcher.
-        </p>
-        <div className="mt-5">
-          <Tabs tabs={["Login", "Signup"]} active={mode} onChange={setMode} />
+      <Card className="grid w-full max-w-sm gap-6 p-8">
+        <div>
+          <h1 className="text-3xl font-black text-ocean">macOS Dev</h1>
+          <p className="text-sm text-slate-600">Version 3.4.6</p>
         </div>
+        <Tabs
+          tabs={["Login", "Sign Up"]}
+          active={mode}
+          onChange={(tab) => setMode(tab as "Login" | "Sign Up")}
+        />
         <form
-          className="mt-5 grid gap-3"
+          className="grid gap-4"
           onSubmit={(event) => {
             event.preventDefault();
             auth.mutate();
@@ -148,9 +151,9 @@ function LoginScreen() {
               onChange={(event) => setUsername(event.target.value)}
             />
           </label>
-          {mode === "Signup" && (
+          {mode === "Sign Up" && (
             <label className="grid gap-1 text-sm font-bold">
-              Display name
+              Display Name
               <Input
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
