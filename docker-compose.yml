@@ -1,0 +1,78 @@
+services:
+  gateway:
+    build: .
+    command: bun run services/gateway/src/server.ts
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      AUTH_URL: "http://auth:4101"
+      SOCIAL_URL: "http://social:4102"
+      REALTIME_URL: "http://realtime:4103"
+      PLATFORM_URL: "http://platform:4104"
+      BROWSER_URL: "http://browser:4105"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+    depends_on:
+      - auth
+      - social
+      - realtime
+      - platform
+      - browser
+
+  auth:
+    build: .
+    command: bun run services/auth/src/server.ts
+    environment:
+      PORT: "4101"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+
+  social:
+    build: .
+    command: bun run services/social/src/server.ts
+    environment:
+      PORT: "4102"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+    depends_on:
+      - auth
+
+  realtime:
+    build: .
+    command: bun run services/realtime/src/server.ts
+    environment:
+      PORT: "4103"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+    depends_on:
+      - auth
+
+  platform:
+    build: .
+    command: bun run services/platform/src/server.ts
+    environment:
+      PORT: "4104"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+    depends_on:
+      - auth
+
+  browser:
+    build: .
+    command: bun run services/browser/src/server.ts
+    environment:
+      PORT: "4105"
+      DB_PATH: "/app/data/platform.sqlite"
+    volumes:
+      - db-volume:/app/data
+    depends_on:
+      - auth
+
+volumes:
+  db-volume:
