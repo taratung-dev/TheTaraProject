@@ -4,14 +4,23 @@ export type Handler = (context: {
   userId: number | null;
 }) => Response | Promise<Response>;
 
-export type Route = [method: string, pattern: RegExp, keys: string[], handler: Handler];
+export type Route = [
+  method: string,
+  pattern: RegExp,
+  keys: string[],
+  handler: Handler,
+];
 
 export function json(data: unknown, status = 200, headers: HeadersInit = {}) {
   return Response.json(data, { status, headers });
 }
 
-export async function body<T>(request: Request): Promise<T> {
-  return await request.json() as T;
+export async function body<T>(request: Request): Promise<T | null> {
+  try {
+    return (await request.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 export function requireUser(userId: number | null) {
@@ -19,12 +28,18 @@ export function requireUser(userId: number | null) {
   return null;
 }
 
-export async function route(request: Request, routes: Route[], userId: number | null = null) {
+export async function route(
+  request: Request,
+  routes: Route[],
+  userId: number | null = null,
+) {
   const url = new URL(request.url);
   for (const [method, pattern, keys, handler] of routes) {
     const match = url.pathname.match(pattern);
     if (request.method === method && match) {
-      const params = Object.fromEntries(keys.map((key, index) => [key, match[index + 1]]));
+      const params = Object.fromEntries(
+        keys.map((key, index) => [key, match[index + 1]]),
+      );
       return await handler({ request, params, userId });
     }
   }
