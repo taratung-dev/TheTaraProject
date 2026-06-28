@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOpost!</title>
+
+  <style>
+    :root {
+      --blue: #2f76d2;
+      --blue-dark: #1d4f9e;
+      --line: #c8d3e0;
+      --paper: #ffffff;
+      --soft: #edf3fb;
+      --text: #1f2d3d;
+      --muted: #6c7a89;
+      --green: #38a169;
+      --orange: #f2992e;
+      --pink: #f25f8c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(47, 118, 210, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(47, 118, 210, 0.08) 1px, transparent 1px),
+        linear-gradient(#dcecff, #f7fbff 420px, #e8eef5);
+      background-size: 22px 22px, 22px 22px, auto;
+      color: var(--text);
+      font-family: Tahoma, Verdana, Segoe UI, sans-serif;
+      font-size: 14px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(#3d8af0, var(--blue-dark));
+      border-bottom: 1px solid #153b78;
+      box-shadow: 0 2px 8px rgba(31, 45, 61, 0.35);
+      color: #fff;
+    }
+
+    .topbar-inner {
+      width: min(1120px, calc(100% - 24px));
+      min-height: 54px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      font-family: Georgia, Times New Roman, serif;
+      font-size: 32px;
+      font-weight: bold;
+      line-height: 1;
+      text-shadow: 0 2px 0 #0f3470;
+      white-space: nowrap;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 120px;
+      height: 34px;
+      padding: 0 12px;
+      border: 1px solid #143b79;
+      border-radius: 3px;
+      box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.14);
+      font: inherit;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .nav span {
+      padding: 8px 10px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .layout {
+      width: min(1120px, calc(100% - 24px));
+      margin: 22px auto 36px;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr) 250px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel,
+    .composer,
+    .post {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 2px 0 rgba(31, 45, 61, 0.08);
+    }
+
+    .panel {
+      padding: 14px;
+    }
+
+    .profile {
+      text-align: center;
+    }
+
+    .avatar.big {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 10px;
+      border: 4px solid #fff;
+      box-shadow: 0 0 0 1px var(--line), 0 3px 0 rgba(31, 45, 61, 0.12);
+      font-size: 36px;
+    }
+
+    .avatar {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #ffd166, #f25f8c);
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+      font-size: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      color: var(--blue-dark);
+      font-size: 16px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      padding: 8px 4px;
+      background: var(--soft);
+      border: 1px solid #d7e3f2;
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .stat b {
+      display: block;
+      color: var(--blue-dark);
+      font-size: 18px;
+    }
+
+    .menu {
+      margin-top: 14px;
+      display: grid;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .menu a {
+      padding: 8px 9px;
+      border-radius: 3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .menu a:hover {
+      background: var(--soft);
+      color: var(--blue-dark);
+    }
+
+    .composer {
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .composer-title {
+      padding: 9px 12px;
+      background: linear-gradient(#f8fbff, #e6effa);
+      border-bottom: 1px solid var(--line);
+      color: var(--blue-dark);
+      font-weight: bold;
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 78px;
+      padding: 13px;
+      border: 0;
+      resize: vertical;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .composer-actions {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border-top: 1px solid var(--line);
+    }
+
+    .tool-row {
+      display: flex;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tool-row span {
+      padding: 5px 7px;
+      border: 1px solid #d7e3f2;
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .post-button {
+      padding: 8px 16px;
+      border: 1px solid #18427e;
+      border-radius: 3px;
+      background: linear-gradient(#40b36d, #2e8b57);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .feed {
+      display: grid;
+      gap: 12px;
+    }
+
+    .post {
+      padding: 13px;
+      animation: popIn 420ms ease both;
+    }
+
+    .post:nth-child(2n) .avatar {
+      background: linear-gradient(135deg, #2f76d2, #55c6ff);
+    }
+
+    .post:nth-child(3n) .avatar {
+      background: linear-gradient(135deg, #38a169, #f2c94c);
+    }
+
+    .post:nth-child(4n) .avatar {
+      background: linear-gradient(135deg, #f2992e, #f25f8c);
+    }
+
+    .post-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .name {
+      font-weight: bold;
+      color: var(--blue-dark);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .post p {
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .photo {
+      min-height: 130px;
+      margin: 10px 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid #ccd8e6;
+      border-radius: 3px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0)),
+        var(--accent);
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.28);
+    }
+
+    .post-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #edf1f6;
+      color: var(--blue-dark);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .tag {
+      padding: 3px 7px;
+      background: #edf3fb;
+      border: 1px solid #d7e3f2;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: normal;
+    }
+
+    .trend-list,
+    .friend-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .trend-list li {
+      padding-bottom: 9px;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .trend-list b {
+      display: block;
+      color: var(--blue-dark);
+    }
+
+    .friend-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini {
+      width: 28px;
+      height: 28px;
+      border-radius: 3px;
+      background: linear-gradient(135deg, var(--orange), var(--pink));
+    }
+
+    .ad {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px dashed #a9bdd4;
+      background: #fffdf2;
+      text-align: center;
+      color: #806000;
+      font-weight: bold;
+    }
+
+    footer {
+      width: min(1120px, calc(100% - 24px));
+      margin: 0 auto 26px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .right-col {
+        display: none;
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar-inner,
+      .layout,
+      footer {
+        width: calc(100% - 16px);
+      }
+
+      .topbar-inner {
+        flex-wrap: wrap;
+        padding: 9px 0;
+      }
+
+      .logo {
+        width: 100%;
+        font-size: 30px;
+      }
+
+      .composer-actions {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .tool-row {
+        flex-wrap: wrap;
+      }
+
+      .post-actions {
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">GOpost!</div>
+      <input class="search" type="search" placeholder="Search GOpost!" />
+      <nav class="nav" aria-label="Main navigation">
+        <span>Home</span>
+        <span>People</span>
+        <span>Messages</span>
+        <span>Settings</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="left-col">
+      <section class="panel profile">
+        <div class="avatar big">GO</div>
+        <h1>GOpost!</h1>
+        <p>Share quick updates, big moods, and tiny internet treasures.</p>
+        <div class="stat-grid">
+          <div class="stat"><b>13</b>Posts</div>
+          <div class="stat"><b>248</b>Fans</div>
+          <div class="stat"><b>17</b>Clubs</div>
+        </div>
+        <div class="menu">
+          <a href="#">News Feed</a>
+          <a href="#">My Profile</a>
+          <a href="#">Photo Wall</a>
+          <a href="#">Games & Apps</a>
+          <a href="#">Top Friends</a>
+        </div>
+      </section>
+    </aside>
+
+    <section class="center-col" aria-label="GOpost feed">
+      <form class="composer">
+        <div class="composer-title">Create a GOpost</div>
+        <textarea placeholder="What's happening today?"></textarea>
+        <div class="composer-actions">
+          <div class="tool-row">
+            <span>Photo</span>
+            <span>Mood</span>
+            <span>Sticker</span>
+          </div>
+          <button class="post-button" type="button">Post</button>
+        </div>
+      </form>
+
+      <div class="feed">
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">AL</div>
+            <div><div class="name">Alya Star</div><div class="meta">Today at 8:04 AM via GOpost Mobile</div></div>
+          </div>
+          <p>Morning upload: fixed my playlist, found a blue jacket, and decided this week needs more lemonade.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #35a7ff, #ffe45e);">PHOTO DROP</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">12 likes</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">JK</div>
+            <div><div class="name">Joko Byte</div><div class="meta">Today at 9:17 AM from Web</div></div>
+          </div>
+          <p>Just made a banner in Paint and it honestly belongs in a museum. Pixel edges forever.</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">8 comments</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">NI</div>
+            <div><div class="name">Nina Orbit</div><div class="meta">Today at 10:02 AM near Bandung</div></div>
+          </div>
+          <p>GOpost status: new shoes, old camera, perfect clouds. I rate today 9/10.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #7bdff2, #b2f7ef, #f7d6e0);">SKY PIC</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">23 likes</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">RA</div>
+            <div><div class="name">Rafa Click</div><div class="meta">Today at 11:25 AM</div></div>
+          </div>
+          <p>Lunch debate: noodles first or fried rice first? This is serious research for the timeline.</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Poll open</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">ME</div>
+            <div><div class="name">Mega Loop</div><div class="meta">Today at 12:11 PM using GOpost Classic</div></div>
+          </div>
+          <p>Changed my profile song and now my page has main-character energy.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #ff6b6b, #ffd166);">MUSIC WALL</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Now playing</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">DI</div>
+            <div><div class="name">Dimas Page</div><div class="meta">Today at 1:40 PM</div></div>
+          </div>
+          <p>Reminder: bring your charger, label your notebook, and never trust a loading bar at 99%.</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Tech tip</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">SA</div>
+            <div><div class="name">Sari Pop</div><div class="meta">Today at 2:03 PM from Tablet</div></div>
+          </div>
+          <p>Sticker pack update is live in my imagination. It has stars, cassette tapes, and one very dramatic thumbs up.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #8338ec, #ffbe0b, #fb5607);">STICKERS</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">34 reactions</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">KE</div>
+            <div><div class="name">Kenzo Fresh</div><div class="meta">Today at 3:16 PM</div></div>
+          </div>
+          <p>Uploaded a new cover photo. It is extremely 2017 and I refuse to apologize.</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Cover changed</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">VI</div>
+            <div><div class="name">Vina Spark</div><div class="meta">Today at 4:01 PM near Jakarta</div></div>
+          </div>
+          <p>My camera roll is 70% food, 20% screenshots, and 10% blurry evidence of fun.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #06d6a0, #118ab2);">SNAPSHOT</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Fresh upload</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">AR</div>
+            <div><div class="name">Arman Wave</div><div class="meta">Today at 5:22 PM</div></div>
+          </div>
+          <p>Who else misses when every website had a tiny sidebar, a shiny button, and way too much confidence?</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Classic web</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">LU</div>
+            <div><div class="name">Luna Mix</div><div class="meta">Today at 6:09 PM from Web</div></div>
+          </div>
+          <p>Evening plan: homework, snack, one episode, then maybe another episode because time is flexible online.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #f15bb5, #fee440, #00bbf9);">EVENING</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Mood</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">BO</div>
+            <div><div class="name">Bowo Net</div><div class="meta">Today at 7:30 PM</div></div>
+          </div>
+          <p>New group idea: people who still organize files in folders called final, final2, and real-final.</p>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Group invite</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-head">
+            <div class="avatar">TA</div>
+            <div><div class="name">Tara Games</div><div class="meta">Today at 8:45 PM official post</div></div>
+          </div>
+          <p>GOpost! now has 13 posts on the timeline. The feed is open, shiny, and ready for more updates.</p>
+          <div class="photo" style="--accent: linear-gradient(135deg, #2f76d2, #38a169, #f2992e);">13 POSTS</div>
+          <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span><span class="tag">Featured</span></div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="right-col">
+      <section class="panel">
+        <h2>Trending 2017</h2>
+        <ul class="trend-list">
+          <li><b>#ProfileSong</b><span>1,204 posts</span></li>
+          <li><b>#StickerMood</b><span>842 posts</span></li>
+          <li><b>#PhotoWall</b><span>511 posts</span></li>
+          <li><b>#LunchPoll</b><span>306 posts</span></li>
+        </ul>
+      </section>
+
+      <section class="panel" style="margin-top: 14px;">
+        <h2>Online Friends</h2>
+        <ul class="friend-list">
+          <li><span class="mini"></span>Alya Star</li>
+          <li><span class="mini"></span>Joko Byte</li>
+          <li><span class="mini"></span>Nina Orbit</li>
+          <li><span class="mini"></span>Tara Games</li>
+        </ul>
+        <div class="ad">GOpost! Classic<br />Now with more shine.</div>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    (c) 2017 GOpost! | Built for desktop, still works on mobile.
+  </footer>
+</body>
+</html>

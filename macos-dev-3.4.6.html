@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>macOS Dev 3.4.6</title>
+
+  <style>
+    :root {
+      --glass: rgba(255, 255, 255, 0.32);
+      --glass-strong: rgba(255, 255, 255, 0.64);
+      --ink: #17202a;
+      --muted: #566573;
+      --line: rgba(255, 255, 255, 0.42);
+      --shadow: 0 24px 60px rgba(18, 38, 63, 0.35);
+      --blue: #2f80ed;
+      --green: #27ae60;
+      --orange: #f2994a;
+      --red: #eb5757;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.58), transparent 22%),
+        radial-gradient(circle at 78% 24%, rgba(255, 215, 122, 0.72), transparent 25%),
+        radial-gradient(circle at 68% 78%, rgba(95, 210, 190, 0.66), transparent 29%),
+        linear-gradient(135deg, #4e8cff 0%, #64d1c6 42%, #f8d66d 100%);
+    }
+
+    .desktop {
+      position: relative;
+      min-height: 100%;
+      padding: 48px 18px 108px;
+    }
+
+    .menu-bar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 50;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.38);
+      background: rgba(246, 250, 255, 0.72);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .menu-left,
+    .menu-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .start-button {
+      min-width: 74px;
+      height: 24px;
+      border: 1px solid rgba(47, 128, 237, 0.38);
+      border-radius: 12px;
+      background: linear-gradient(#ffffff, #dfeeff);
+      color: #1f5fac;
+      font: inherit;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 #fff, 0 1px 3px rgba(18, 38, 63, 0.18);
+    }
+
+    .menu-item {
+      white-space: nowrap;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .start-menu {
+      position: fixed;
+      top: 40px;
+      left: 12px;
+      z-index: 60;
+      width: 245px;
+      padding: 10px;
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(250, 253, 255, 0.82);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .start-menu.open {
+      display: block;
+      animation: menuIn 180ms ease both;
+    }
+
+    .start-title {
+      padding: 8px 10px 10px;
+      border-bottom: 1px solid rgba(23, 32, 42, 0.12);
+      color: var(--blue);
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .start-menu button {
+      width: 100%;
+      margin-top: 7px;
+      padding: 9px 10px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .start-menu button:hover {
+      background: rgba(47, 128, 237, 0.13);
+    }
+
+    .desktop-icons {
+      position: absolute;
+      top: 58px;
+      right: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .desktop-icon {
+      width: 82px;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.34);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .desktop-icon .app-icon {
+      margin: 0 auto 7px;
+      box-shadow: 0 8px 18px rgba(18, 38, 63, 0.25);
+    }
+
+    .welcome {
+      width: min(620px, calc(100% - 120px));
+      margin: 34px 0 0 22px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 42px rgba(18, 38, 63, 0.18);
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+    }
+
+    .welcome h1 {
+      margin: 0 0 8px;
+      font-size: 46px;
+      letter-spacing: 0;
+    }
+
+    .welcome p {
+      max-width: 480px;
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .window-layer {
+      position: absolute;
+      inset: 44px 16px 102px;
+      pointer-events: none;
+    }
+
+    .window {
+      position: absolute;
+      width: min(520px, calc(100vw - 34px));
+      min-height: 310px;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 12px;
+      background: rgba(250, 253, 255, 0.88);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      pointer-events: auto;
+    }
+
+    .window.open {
+      display: block;
+      animation: windowIn 220ms ease both;
+    }
+
+    .window.store {
+      left: 5%;
+      top: 7%;
+    }
+
+    .window.settings {
+      left: 18%;
+      top: 16%;
+    }
+
+    .window.minecraft {
+      left: 33%;
+      top: 9%;
+    }
+
+    .window.messenger {
+      right: 4%;
+      top: 20%;
+    }
+
+    .window-bar {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 12px;
+      border-bottom: 1px solid rgba(23, 32, 42, 0.12);
+      background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(225, 236, 247, 0.92));
+      font-weight: bold;
+    }
+
+    .lights {
+      display: flex;
+      gap: 6px;
+    }
+
+    .light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .light.red {
+      background: #ff5f57;
+    }
+
+    .light.yellow {
+      background: #ffbd2e;
+    }
+
+    .light.green {
+      background: #28c840;
+    }
+
+    .window-title {
+      flex: 1;
+      text-align: center;
+      color: #34495e;
+      font-size: 13px;
+    }
+
+    .close {
+      width: 28px;
+      height: 24px;
+      border: 0;
+      border-radius: 5px;
+      background: rgba(235, 87, 87, 0.12);
+      color: #b43b3b;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .window-body {
+      padding: 16px;
+    }
+
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .store-card,
+    .setting-row,
+    .message {
+      border: 1px solid rgba(23, 32, 42, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.66);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    .store-card {
+      padding: 12px;
+    }
+
+    .store-card b {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--blue);
+    }
+
+    .install {
+      margin-top: 10px;
+      padding: 6px 10px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(#42d97c, #24a85a);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .setting-row {
+      margin-bottom: 10px;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .switch {
+      width: 50px;
+      height: 25px;
+      padding: 3px;
+      border-radius: 20px;
+      background: #ccd6e2;
+    }
+
+    .switch.on {
+      background: var(--green);
+    }
+
+    .switch::after {
+      content: "";
+      width: 19px;
+      height: 19px;
+      display: block;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .switch.on::after {
+      margin-left: 25px;
+    }
+
+    .game-screen {
+      min-height: 184px;
+      display: grid;
+      place-items: center;
+      border: 5px solid #51351e;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(#6fc15c 0 50%, #7a5232 50% 100%);
+      background-size: 24px 24px, 24px 24px, auto;
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .play {
+      margin-top: 12px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 5px;
+      background: linear-gradient(#6ddf64, #3cae3b);
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .message {
+      margin-bottom: 9px;
+      padding: 10px 12px;
+    }
+
+    .message b {
+      color: var(--blue);
+    }
+
+    .message-input {
+      width: 100%;
+      margin-top: 7px;
+      padding: 10px;
+      border: 1px solid rgba(23, 32, 42, 0.16);
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    .dock {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      z-index: 55;
+      transform: translateX(-50%);
+      min-height: 76px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(246, 250, 255, 0.42);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 44px rgba(18, 38, 63, 0.3);
+    }
+
+    .dock button {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 13px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 9px 18px rgba(18, 38, 63, 0.26);
+      transition: transform 140ms ease;
+    }
+
+    .dock button:hover {
+      transform: translateY(-9px) scale(1.08);
+    }
+
+    .app-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .store-icon {
+      background: linear-gradient(135deg, #36d1dc, #2f80ed);
+    }
+
+    .settings-icon {
+      background: linear-gradient(135deg, #95a5a6, #34495e);
+    }
+
+    .minecraft-icon {
+      background: linear-gradient(135deg, #7ac74f 0 48%, #8b5a2b 48% 100%);
+    }
+
+    .messenger-icon {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+    }
+
+    .finder-icon {
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    }
+
+    @keyframes windowIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes menuIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        overflow: auto;
+      }
+
+      .desktop {
+        min-height: 100vh;
+        padding-bottom: 126px;
+      }
+
+      .menu-left {
+        gap: 7px;
+      }
+
+      .menu-item.optional {
+        display: none;
+      }
+
+      .welcome {
+        width: auto;
+        margin: 24px 0 0;
+      }
+
+      .welcome h1 {
+        font-size: 34px;
+      }
+
+      .desktop-icons {
+        position: static;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 18px;
+      }
+
+      .desktop-icon {
+        width: auto;
+      }
+
+      .window-layer {
+        position: static;
+        inset: auto;
+        margin-top: 18px;
+      }
+
+      .window,
+      .window.store,
+      .window.settings,
+      .window.minecraft,
+      .window.messenger {
+        position: static;
+        width: 100%;
+        margin-bottom: 14px;
+      }
+
+      .dock {
+        width: calc(100% - 20px);
+        justify-content: center;
+        overflow-x: auto;
+      }
+
+      .store-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="menu-bar">
+    <div class="menu-left">
+      <button class="start-button" type="button" onclick="toggleStart()">Start</button>
+      <span class="menu-item">macOS Dev</span>
+      <span class="menu-item optional">File</span>
+      <span class="menu-item optional">Edit</span>
+      <span class="menu-item optional">View</span>
+      <span class="menu-item optional">Window</span>
+    </div>
+    <div class="menu-right">
+      <span>Wi-Fi</span>
+      <span>100%</span>
+      <span id="clock">12:00</span>
+    </div>
+  </div>
+
+  <div class="start-menu" id="startMenu">
+    <div class="start-title">macOS Dev 3.4.6</div>
+    <button type="button" onclick="openApp('store')"><span class="app-icon store-icon">Store</span>Open Store</button>
+    <button type="button" onclick="openApp('settings')"><span class="app-icon settings-icon">Set</span>Open Settings</button>
+    <button type="button" onclick="openApp('minecraft')"><span class="app-icon minecraft-icon">MC</span>Open Minecraft</button>
+    <button type="button" onclick="openApp('messenger')"><span class="app-icon messenger-icon">Msg</span>Open Messenger</button>
+  </div>
+
+  <main class="desktop">
+    <section class="welcome">
+      <h1>macOS Dev 3.4.6</h1>
+      <p>A playful HTML desktop with a glossy top start menu, dock apps, floating windows, and a bright developer preview wallpaper.</p>
+    </section>
+
+    <section class="desktop-icons" aria-label="Desktop apps">
+      <button class="desktop-icon" type="button" onclick="openApp('store')">
+        <span class="app-icon store-icon">Store</span>
+        Store
+      </button>
+      <button class="desktop-icon" type="button" onclick="openApp('settings')">
+        <span class="app-icon settings-icon">Set</span>
+        Settings
+      </button>
+      <button class="desktop-icon" type="button" onclick="openApp('minecraft')">
+        <span class="app-icon minecraft-icon">MC</span>
+        Minecraft
+      </button>
+      <button class="desktop-icon" type="button" onclick="openApp('messenger')">
+        <span class="app-icon messenger-icon">Msg</span>
+        Messenger
+      </button>
+    </section>
+
+    <section class="window-layer">
+      <article class="window store open" id="store">
+        <div class="window-bar">
+          <div class="lights"><span class="light red"></span><span class="light yellow"></span><span class="light green"></span></div>
+          <div class="window-title">Store</div>
+          <button class="close" type="button" onclick="closeApp('store')">x</button>
+        </div>
+        <div class="window-body">
+          <h2>Dev Store</h2>
+          <div class="store-grid">
+            <div class="store-card"><b>Minecraft</b>Build blocks, survive nights, and explore worlds.<button class="install" type="button">Open</button></div>
+            <div class="store-card"><b>Messenger</b>Chat with friends from the dock.<button class="install" type="button">Open</button></div>
+            <div class="store-card"><b>Notes Mini</b>Simple sticky notes for ideas.<button class="install" type="button">Install</button></div>
+            <div class="store-card"><b>Pixel Paint</b>Draw icons with retro tools.<button class="install" type="button">Install</button></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="window settings" id="settings">
+        <div class="window-bar">
+          <div class="lights"><span class="light red"></span><span class="light yellow"></span><span class="light green"></span></div>
+          <div class="window-title">Settings</div>
+          <button class="close" type="button" onclick="closeApp('settings')">x</button>
+        </div>
+        <div class="window-body">
+          <h2>System Settings</h2>
+          <div class="setting-row"><span>Glass Dock</span><span class="switch on"></span></div>
+          <div class="setting-row"><span>Bright Wallpaper</span><span class="switch on"></span></div>
+          <div class="setting-row"><span>Developer Mode</span><span class="switch on"></span></div>
+          <div class="setting-row"><span>Classic Sounds</span><span class="switch"></span></div>
+        </div>
+      </article>
+
+      <article class="window minecraft" id="minecraft">
+        <div class="window-bar">
+          <div class="lights"><span class="light red"></span><span class="light yellow"></span><span class="light green"></span></div>
+          <div class="window-title">Minecraft</div>
+          <button class="close" type="button" onclick="closeApp('minecraft')">x</button>
+        </div>
+        <div class="window-body">
+          <h2>Minecraft Launcher</h2>
+          <div class="game-screen">Block World Ready</div>
+          <button class="play" type="button" onclick="alert('Launching Minecraft demo...')">Play Demo</button>
+        </div>
+      </article>
+
+      <article class="window messenger" id="messenger">
+        <div class="window-bar">
+          <div class="lights"><span class="light red"></span><span class="light yellow"></span><span class="light green"></span></div>
+          <div class="window-title">Messenger</div>
+          <button class="close" type="button" onclick="closeApp('messenger')">x</button>
+        </div>
+        <div class="window-body">
+          <h2>Messenger</h2>
+          <div class="message"><b>Alya:</b> Did you see the new dock?</div>
+          <div class="message"><b>Tara:</b> Store and Minecraft are already pinned.</div>
+          <div class="message"><b>Dev:</b> macOS Dev 3.4.6 is online.</div>
+          <input class="message-input" type="text" placeholder="Write a message..." />
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <nav class="dock" aria-label="Dock apps">
+    <button class="finder-icon" type="button" onclick="alert('Finder demo is ready.')">Find</button>
+    <button class="store-icon" type="button" onclick="openApp('store')">Store</button>
+    <button class="settings-icon" type="button" onclick="openApp('settings')">Set</button>
+    <button class="minecraft-icon" type="button" onclick="openApp('minecraft')">MC</button>
+    <button class="messenger-icon" type="button" onclick="openApp('messenger')">Msg</button>
+  </nav>
+
+  <script>
+    function openApp(id) {
+      document.getElementById(id).classList.add("open");
+      document.getElementById("startMenu").classList.remove("open");
+    }
+
+    function closeApp(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function toggleStart() {
+      document.getElementById("startMenu").classList.toggle("open");
+    }
+
+    function updateClock() {
+      var now = new Date();
+      var hours = String(now.getHours()).padStart(2, "0");
+      var minutes = String(now.getMinutes()).padStart(2, "0");
+      document.getElementById("clock").textContent = hours + ":" + minutes;
+    }
+
+    updateClock();
+    setInterval(updateClock, 30000);
+  </script>
+</body>
+</html>
