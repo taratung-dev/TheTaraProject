@@ -1,5 +1,16 @@
 import { openServiceDb } from "../../_lib/db";
 
+export type MessageJoinRow = {
+  id: number;
+  conversationId: number;
+  body: string;
+  createdAt: string;
+  authorId: number;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+};
+
 export const db = openServiceDb();
 
 export function migrateRealtime() {
@@ -82,7 +93,7 @@ export function conversationRows(userId: number) {
 }
 
 export function messageRows(conversationId: number) {
-  return db
+  const rows = db
     .query(
       `
     SELECT m.id, m.conversation_id AS conversationId, m.body, m.created_at AS createdAt,
@@ -92,19 +103,19 @@ export function messageRows(conversationId: number) {
     ORDER BY m.id
   `,
     )
-    .all(conversationId)
-    .map((row: any) => ({
-      id: row.id,
-      conversationId: row.conversationId,
-      body: row.body,
-      createdAt: row.createdAt,
-      sender: {
-        id: row.authorId,
-        username: row.username,
-        displayName: row.displayName,
-        avatarColor: row.avatarColor,
-      },
-    }));
+    .all(conversationId) as MessageJoinRow[];
+  return rows.map((row) => ({
+    id: row.id,
+    conversationId: row.conversationId,
+    body: row.body,
+    createdAt: row.createdAt,
+    sender: {
+      id: row.authorId,
+      username: row.username,
+      displayName: row.displayName,
+      avatarColor: row.avatarColor,
+    },
+  }));
 }
 
 export function sendMessage(

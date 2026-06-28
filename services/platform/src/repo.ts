@@ -1,5 +1,19 @@
 import { openServiceDb } from "../../_lib/db";
 
+export type SettingsRow = {
+  wallpaper: string;
+  dockStyle: string;
+  notifications: number;
+  classicSounds: number;
+  darkMode: number;
+};
+
+export type DesktopStateRow = {
+  dockApps: string;
+  openedApps: string;
+  wallpaper: string;
+};
+
 export const db = openServiceDb();
 
 export function migratePlatform() {
@@ -172,7 +186,7 @@ export function settings(userId: number) {
     .query(
       "SELECT wallpaper, dock_style AS dockStyle, notifications, classic_sounds AS classicSounds, dark_mode AS darkMode FROM user_settings WHERE user_id = ?",
     )
-    .get(userId) as any;
+    .get(userId) as SettingsRow | null;
   return {
     wallpaper: row?.wallpaper ?? "dev-bright",
     dockStyle: row?.dockStyle ?? "glass",
@@ -187,7 +201,7 @@ export function desktopState(userId: number) {
     .query(
       "SELECT dock_apps AS dockApps, opened_apps AS openedApps, wallpaper FROM desktop_state WHERE user_id = ?",
     )
-    .get(userId) as any;
+    .get(userId) as DesktopStateRow | null;
   return {
     dockApps: row
       ? JSON.parse(row.dockApps)
