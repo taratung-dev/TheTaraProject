@@ -64,6 +64,27 @@ const routes: Route[] = [
     },
   ],
   [
+    "DELETE",
+    /^\/apps\/([^/]+)\/install$/,
+    ["id"],
+    ({ params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      db.transaction(() => {
+        db.prepare(
+          "DELETE FROM installed_apps WHERE user_id = ? AND app_id = ?",
+        ).run(userId, params.id);
+        const state = desktopState(userId!);
+        const idx = state.dockApps.indexOf(params.id);
+        if (idx !== -1) state.dockApps.splice(idx, 1);
+        db.prepare(
+          "UPDATE desktop_state SET dock_apps = ? WHERE user_id = ?",
+        ).run(JSON.stringify(state.dockApps), userId);
+      })();
+      return json({ ok: true });
+    },
+  ],
+  [
     "GET",
     /^\/settings$/,
     [],
@@ -86,10 +107,10 @@ const routes: Route[] = [
       const next = { ...current, ...input };
       db.prepare(
         `
-      INSERT INTO user_settings (user_id, wallpaper, dock_style, notifications, classic_sounds)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO user_settings (user_id, wallpaper, dock_style, notifications, classic_sounds, dark_mode)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET wallpaper = excluded.wallpaper, dock_style = excluded.dock_style,
-        notifications = excluded.notifications, classic_sounds = excluded.classic_sounds
+        notifications = excluded.notifications, classic_sounds = excluded.classic_sounds, dark_mode = excluded.dark_mode
     `,
       ).run(
         userId,
@@ -97,6 +118,7 @@ const routes: Route[] = [
         next.dockStyle,
         next.notifications ? 1 : 0,
         next.classicSounds ? 1 : 0,
+        next.darkMode ? 1 : 0,
       );
       return json({ settings: settings(userId!) });
     },

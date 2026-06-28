@@ -32,6 +32,40 @@ const routes: Route[] = [
     },
   ],
   [
+    "POST",
+    /^\/conversations$/,
+    [],
+    async ({ request, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{ title: string; memberIds: number[] }>(request);
+      if (!input || !input.title?.trim())
+        return json({ error: "Title is required." }, 400);
+      if (!Array.isArray(input.memberIds) || input.memberIds.length === 0)
+        return json({ error: "At least one member is required." }, 400);
+      const memberIds = [...new Set([...input.memberIds, userId!])];
+      let conversationId: number;
+      db.transaction(() => {
+        const result = db
+          .prepare("INSERT INTO conversations (title, type) VALUES (?, ?)")
+          .run(input.title.trim(), "group");
+        conversationId = Number(result.lastInsertRowid);
+        const insert = db.prepare(
+          "INSERT INTO conversation_members (conversation_id, user_id) VALUES (?, ?)",
+        );
+        for (const memberId of memberIds) insert.run(conversationId, memberId);
+      })();
+      return json(
+        {
+          conversation: conversationRows(userId!).find(
+            (c: any) => c.id === conversationId!,
+          ),
+        },
+        201,
+      );
+    },
+  ],
+  [
     "GET",
     /^\/conversations\/([^/]+)\/messages$/,
     ["id"],
@@ -75,6 +109,19 @@ const routes: Route[] = [
         .all(userId)
         .map((row: any) => ({ ...row, read: Boolean(row.read) }));
       return json({ notifications });
+    },
+  ],
+  [
+    "POST",
+    /^\/notifications\/read-all$/,
+    [],
+    ({ userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      db.prepare(
+        "UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0",
+      ).run(userId);
+      return json({ ok: true });
     },
   ],
   [
