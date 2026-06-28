@@ -1,8 +1,10 @@
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Comment, Post, Profile, User } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
+import { useDebounce } from "../../lib/useDebounce";
+import { Skeleton, SkeletonPost } from "../../lib/Skeleton";
 
 function initials(user?: User | null) {
   return (
@@ -36,12 +38,16 @@ export function GOpostClassic({
 }) {
   const [body, setBody] = useState("");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"feed" | "profile" | "photos">("feed");
+  const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
   const posts = useQuery({
-    queryKey: ["posts", search],
+    queryKey: ["posts", debouncedSearch],
     queryFn: () =>
       api<{ posts: Post[] }>(
-        search ? `/api/search?q=${encodeURIComponent(search)}` : "/api/posts",
+        debouncedSearch
+          ? `/api/search?q=${encodeURIComponent(debouncedSearch)}`
+          : "/api/posts",
       ),
   });
   const profile = useQuery({
@@ -68,6 +74,14 @@ export function GOpostClassic({
   const postCount =
     profile.data?.profile.postCount ?? posts.data?.posts.length ?? 13;
   const fanCount = profile.data?.profile.fanCount ?? 248;
+
+  const visiblePosts = useMemo(() => {
+    const all = posts.data?.posts ?? [];
+    if (view === "profile" && user)
+      return all.filter((p) => p.author.username === user.username);
+    if (view === "photos") return all.filter((p) => p.imageStyle);
+    return all;
+  }, [posts.data, view, user]);
 
   return (
     <div className={embedded ? "gp-page gp-embedded" : "gp-page"}>
@@ -128,11 +142,23 @@ export function GOpostClassic({
               </div>
             </div>
             <div className="gp-menu">
-              <a>News Feed</a>
-              <a>My Profile</a>
-              <a>Photo Wall</a>
-              <a>Games & Apps</a>
-              <a>Top Friends</a>
+              <button
+                type="button"
+                onClick={() => {
+                  setView("feed");
+                  setSearch("");
+                }}
+              >
+                News Feed
+              </button>
+              <button type="button" onClick={() => setView("profile")}>
+                My Profile
+              </button>
+              <button type="button" onClick={() => setView("photos")}>
+                Photo Wall
+              </button>
+              <span>Games &amp; Apps</span>
+              <span>Top Friends</span>
             </div>
           </section>
         </aside>
@@ -178,7 +204,11 @@ export function GOpostClassic({
 
           <div className="gp-feed">
             {posts.isLoading && (
-              <div className="gp-post">Loading GOpost...</div>
+              <>
+                <SkeletonPost />
+                <SkeletonPost />
+                <SkeletonPost />
+              </>
             )}
             {posts.isError && !posts.data?.posts.length && (
               <QueryErrorCard
@@ -193,7 +223,7 @@ export function GOpostClassic({
             {posts.data?.posts.length === 0 && (
               <div className="gp-post">No posts found.</div>
             )}
-            {posts.data?.posts.map((post, index) => (
+            {visiblePosts.map((post, index) => (
               <ClassicPost
                 key={post.id}
                 post={post}
@@ -383,7 +413,10 @@ function ClassicPost({
       {like.isError && <ErrorNotice error={like.error} className="mt-2" />}
       {remove.isError && <ErrorNotice error={remove.error} className="mt-2" />}
       {comments.isLoading && (
-        <div className="gp-comments">Loading comments...</div>
+        <div className="gp-comments">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="mt-1 h-3 w-4/5" />
+        </div>
       )}
       {comments.isError && (
         <ErrorNotice error={comments.error} className="mt-2" />

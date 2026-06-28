@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, Menu } from "lucide-react";
+import { Bell, CheckCheck, LogOut, Menu } from "lucide-react";
 import type {
   AppRecord,
   DesktopState,
@@ -53,6 +53,8 @@ export function DesktopShell({ user }: { user: User }) {
     setStartOpen,
     setActiveApp,
     hydrateOpenedApps,
+    windowPositions,
+    setWindowPosition,
   } = useDesktopStore();
   const apps = useQuery({
     queryKey: ["apps"],
@@ -73,8 +75,17 @@ export function DesktopShell({ user }: { user: User }) {
 
   const installedApps =
     apps.data?.apps.filter((app) => app.installed || app.id === "store") ?? [];
-  const unread =
-    notifications.data?.notifications.filter((item) => !item.read).length ?? 0;
+
+  const allNotifications = notifications.data?.notifications ?? [];
+  const unread = allNotifications.filter((item) => !item.read).length;
+  const messengerUnread = allNotifications.filter(
+    (item) => !item.read && item.type === "message",
+  ).length;
+  const gopostUnread = allNotifications.filter(
+    (item) => !item.read && item.type !== "message",
+  ).length;
+
+  const darkMode = settings.data?.settings.darkMode === true;
 
   useEffect(() => {
     if (desktop.data?.desktopState.openedApps.length) {
@@ -97,6 +108,13 @@ export function DesktopShell({ user }: { user: User }) {
   const logout = useMutation({
     mutationFn: () => api("/api/auth/logout", { method: "POST" }),
     onSuccess: () => queryClient.setQueryData(["session"], { user: null }),
+  });
+
+  const markAllRead = useMutation({
+    mutationFn: () => api("/api/notifications/read-all", { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
   });
 
   const wallpaper = settings.data?.settings.wallpaper ?? "dev-bright";
@@ -123,10 +141,17 @@ export function DesktopShell({ user }: { user: User }) {
     <main
       className={cn(
         "desktop-root min-h-screen overflow-hidden bg-wallpaper p-4 pb-28 pt-12 font-display",
+        "dark:bg-slate-900",
         wallpaper === "sunset" && "bg-wallpaper-sunset",
+        darkMode && "dark",
       )}
     >
-      <header className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/50 bg-white/70 px-3 text-xs font-bold backdrop-blur-xl">
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/50 bg-white/70 px-3 text-xs font-bold backdrop-blur-xl",
+          "dark:bg-slate-800/70 dark:border-slate-600 dark:text-slate-200",
+        )}
+      >
         <div className="flex items-center gap-2">
           <Button
             variant={startOpen ? "primary" : "soft"}
@@ -153,6 +178,19 @@ export function DesktopShell({ user }: { user: User }) {
               )}
             </span>
           </Tooltip>
+          {unread > 0 && (
+            <Tooltip label="Mark all notifications read">
+              <Button
+                variant="soft"
+                className="h-6 px-2 py-1 text-xs"
+                onClick={() => markAllRead.mutate()}
+                disabled={markAllRead.isPending}
+              >
+                <CheckCheck size={14} />
+                Mark all read
+              </Button>
+            </Tooltip>
+          )}
           <Button
             variant="soft"
             className="h-6 px-2 py-1 text-xs"
@@ -185,7 +223,12 @@ export function DesktopShell({ user }: { user: User }) {
         />
       )}
 
-      <section className="welcome-card ml-0 mt-7 w-full max-w-2xl rounded-2xl border border-white/60 bg-white/30 p-6 text-white shadow-glass backdrop-blur md:ml-5">
+      <section
+        className={cn(
+          "welcome-card ml-0 mt-7 w-full max-w-2xl rounded-2xl border border-white/60 bg-white/30 p-6 text-white shadow-glass backdrop-blur md:ml-5",
+          "dark:bg-slate-800/30 dark:border-slate-600",
+        )}
+      >
         <h1 className="text-4xl font-black md:text-5xl">macOS Dev 3.4.6</h1>
         <p className="mt-2 max-w-xl text-sm leading-6 text-white/95">
           Welcome back, {user.displayName}. This desktop is now powered by a
@@ -210,6 +253,8 @@ export function DesktopShell({ user }: { user: User }) {
             app={app}
             active={activeApp === app}
             title={labels[app] ?? app}
+            position={windowPositions[app]}
+            onMove={(pos) => setWindowPosition(app, pos)}
             onClose={() => closeApp(app)}
             onFocus={() => setActiveApp(app)}
           >
@@ -246,12 +291,23 @@ export function DesktopShell({ user }: { user: User }) {
         ))}
       </section>
 
-      <nav className="fixed bottom-4 left-1/2 z-50 flex min-h-20 -translate-x-1/2 items-end gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-4 py-3 shadow-dock backdrop-blur-xl">
+      <nav
+        className={cn(
+          "fixed bottom-4 left-1/2 z-50 flex min-h-20 -translate-x-1/2 items-end gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-4 py-3 shadow-dock backdrop-blur-xl",
+          "dark:bg-slate-800/40 dark:border-slate-600",
+        )}
+      >
         {installedApps.map((app) => (
           <DockButton
             key={app.id}
             app={app}
-            unread={app.id === "messenger" || app.id === "gopost" ? unread : 0}
+            unread={
+              app.id === "messenger"
+                ? messengerUnread
+                : app.id === "gopost"
+                  ? gopostUnread
+                  : 0
+            }
             onOpen={() => openApp(app.id as OpenApp)}
           />
         ))}
@@ -292,6 +348,7 @@ function StartMenu({
 function DesktopIcon({ app, onOpen }: { app: AppRecord; onOpen: () => void }) {
   return (
     <button
+      type="button"
       className="grid w-24 justify-items-center gap-2 text-center text-xs font-bold text-white drop-shadow"
       onClick={onOpen}
     >
@@ -312,6 +369,7 @@ function DockButton({
 }) {
   return (
     <button
+      type="button"
       className={cn(
         "app-tile relative transition hover:-translate-y-2 hover:scale-110",
         app.id,
@@ -330,11 +388,15 @@ function AppIcon({ app }: { app: string }) {
   return <span className={cn("app-tile", app)}>{shorts[app] ?? app}</span>;
 }
 
+type WindowPosition = { x: number; y: number; width: number };
+
 function AppWindow({
   app,
   title,
   active,
   children,
+  position,
+  onMove,
   onClose,
   onFocus,
 }: {
@@ -342,9 +404,58 @@ function AppWindow({
   title: string;
   active: boolean;
   children: React.ReactNode;
+  position: WindowPosition | undefined;
+  onMove: (pos: WindowPosition) => void;
   onClose: () => void;
   onFocus: () => void;
 }) {
+  const dragging = useRef(false);
+  const offset = useRef({ x: 0, y: 0 });
+
+  const handleTitleBarMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Don't drag when clicking the close button
+      if ((e.target as HTMLElement).closest("button")) return;
+
+      e.preventDefault();
+      dragging.current = true;
+
+      const articleEl = e.currentTarget.parentElement;
+      if (!articleEl) return;
+
+      const rect = articleEl.getBoundingClientRect();
+      offset.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+
+      const currentWidth = position?.width ?? rect.width;
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        if (!dragging.current) return;
+        onMove({
+          x: ev.clientX - offset.current.x,
+          y: ev.clientY - offset.current.y,
+          width: currentWidth,
+        });
+      };
+
+      const handleMouseUp = () => {
+        dragging.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [onMove, position?.width],
+  );
+
+  const positionStyle: React.CSSProperties | undefined = position
+    ? { left: position.x, top: position.y, width: position.width }
+    : undefined;
+
   return (
     <article
       className={cn(
@@ -352,9 +463,14 @@ function AppWindow({
         app,
         active && "z-30 ring-2 ring-white/70",
       )}
+      style={positionStyle}
       onMouseDown={onFocus}
     >
-      <div className="flex h-10 items-center gap-3 border-b border-slate-200 bg-gradient-to-b from-white to-slate-100 px-3">
+      <div
+        role="toolbar"
+        className="flex h-10 cursor-grab items-center gap-3 border-b border-slate-200 bg-gradient-to-b from-white to-slate-100 px-3 active:cursor-grabbing"
+        onMouseDown={handleTitleBarMouseDown}
+      >
         <span className="flex gap-1.5">
           <i className="h-3 w-3 rounded-full bg-red-400" />
           <i className="h-3 w-3 rounded-full bg-yellow-400" />

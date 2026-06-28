@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UserSettings } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
+import { SkeletonCard } from "../../lib/Skeleton";
 import { Button, Card, Switch } from "../../lib/ui";
 
 export function SettingsApp() {
@@ -31,7 +32,7 @@ export function SettingsApp() {
   }
 
   const current = settings.data?.settings;
-  if (!current) return <Card className="p-4">Loading settings...</Card>;
+  if (!current) return <SkeletonCard lines={4} className="p-4" />;
 
   return (
     <div>
@@ -60,6 +61,11 @@ export function SettingsApp() {
           onClick={() =>
             patch.mutate({ classicSounds: !current.classicSounds })
           }
+        />
+        <Setting
+          label="Dark Mode"
+          on={current.darkMode}
+          onClick={() => patch.mutate({ darkMode: !current.darkMode })}
         />
         <Card className="p-3">
           <div className="font-bold">Wallpaper</div>

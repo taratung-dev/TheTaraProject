@@ -4,10 +4,13 @@ import type { Conversation, Message } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { Badge, Button, Card, Input } from "../../lib/ui";
+import { SkeletonRow, SkeletonMessage } from "../../lib/Skeleton";
 
 export function MessengerApp() {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [text, setText] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
   const queryClient = useQueryClient();
   const conversations = useQuery({
     queryKey: ["conversations"],
@@ -21,6 +24,19 @@ export function MessengerApp() {
     queryFn: () =>
       api<{ messages: Message[] }>(`/api/conversations/${active}/messages`),
     enabled: Boolean(active),
+  });
+
+  const createConversation = useMutation({
+    mutationFn: () =>
+      api("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ title: newTitle, memberIds: [1, 2, 3] }),
+      }),
+    onSuccess: () => {
+      setNewTitle("");
+      setCreating(false);
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
   });
 
   const send = useMutation({
@@ -51,9 +67,41 @@ export function MessengerApp() {
     <div className="grid min-h-[420px] gap-3 md:grid-cols-[180px_1fr]">
       <Card className="p-3">
         <h2 className="text-lg font-black text-ocean">Messenger</h2>
+        <Button
+          variant="soft"
+          className="mt-2 w-full text-xs"
+          onClick={() => setCreating(!creating)}
+        >
+          {creating ? "Cancel" : "New Chat"}
+        </Button>
+        {creating && (
+          <form
+            className="mt-2 grid gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (newTitle.trim()) createConversation.mutate();
+            }}
+          >
+            <Input
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="Conversation name..."
+            />
+            <Button disabled={!newTitle.trim() || createConversation.isPending}>
+              {createConversation.isPending ? "Creating..." : "Create"}
+            </Button>
+            {createConversation.isError && (
+              <ErrorNotice error={createConversation.error} />
+            )}
+          </form>
+        )}
         <div className="mt-3 grid gap-2">
           {conversations.isLoading && (
-            <p className="text-sm text-slate-600">Loading conversations...</p>
+            <>
+              <SkeletonRow />
+              <SkeletonRow className="mt-2" />
+              <SkeletonRow className="mt-2" />
+            </>
           )}
           {conversations.data?.conversations.map((conversation) => (
             <Button
@@ -82,7 +130,11 @@ export function MessengerApp() {
             </p>
           )}
           {active && messages.isLoading && (
-            <p className="text-sm text-slate-600">Loading messages...</p>
+            <div className="grid gap-2">
+              <SkeletonMessage />
+              <SkeletonMessage />
+              <SkeletonMessage />
+            </div>
           )}
           {active && messages.isError && (
             <QueryErrorCard

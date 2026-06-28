@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { MinecraftProfile, MinecraftWorld } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
+import { SkeletonCard, SkeletonRow } from "../../lib/Skeleton";
 import { Badge, Button, Card } from "../../lib/ui";
 
 export function MinecraftApp() {
@@ -42,7 +43,13 @@ export function MinecraftApp() {
         {launch.isError && <ErrorNotice error={launch.error} />}
       </div>
       <div className="mt-4 grid gap-2">
-        {worlds.isLoading && <Card className="p-4">Loading worlds...</Card>}
+        {worlds.isLoading && (
+          <>
+            <SkeletonRow />
+            <SkeletonRow className="mt-2" />
+            <SkeletonRow className="mt-2" />
+          </>
+        )}
         {worlds.isError && (
           <QueryErrorCard
             title="World list failed to load"

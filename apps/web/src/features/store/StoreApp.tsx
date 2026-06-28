@@ -3,6 +3,7 @@ import type { AppRecord } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { Badge, Button, Card } from "../../lib/ui";
+import { SkeletonCard } from "../../lib/Skeleton";
 
 export function StoreApp({ onOpen }: { onOpen: (app: string) => void }) {
   const queryClient = useQueryClient();
@@ -17,6 +18,14 @@ export function StoreApp({ onOpen }: { onOpen: (app: string) => void }) {
       queryClient.invalidateQueries({ queryKey: ["apps"] });
       queryClient.invalidateQueries({ queryKey: ["desktop-state"] });
       onOpen(id);
+    },
+  });
+  const uninstall = useMutation({
+    mutationFn: (id: string) =>
+      api(`/api/apps/${id}/install`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["apps"] });
+      queryClient.invalidateQueries({ queryKey: ["desktop-state"] });
     },
   });
 
@@ -38,11 +47,21 @@ export function StoreApp({ onOpen }: { onOpen: (app: string) => void }) {
         Install apps into the dock and desktop. Store state is owned by the
         Platform service.
       </p>
-      {install.isError && (
-        <ErrorNotice error={install.error} className="mt-4" />
+      {(install.isError || uninstall.isError) && (
+        <ErrorNotice
+          error={install.error ?? uninstall.error}
+          className="mt-4"
+        />
       )}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {apps.isLoading && <Card className="p-4">Loading apps...</Card>}
+        {apps.isLoading && (
+          <>
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+          </>
+        )}
         {apps.data?.apps.map((app) => (
           <Card key={app.id} className="grid gap-2 p-4">
             <div className="flex items-center justify-between gap-2">
@@ -52,20 +71,38 @@ export function StoreApp({ onOpen }: { onOpen: (app: string) => void }) {
             <p className="text-sm leading-5 text-slate-600">
               {app.description}
             </p>
-            <Button
-              className="justify-self-start"
-              variant={app.installed ? "soft" : "primary"}
-              onClick={() =>
-                app.installed ? onOpen(app.id) : install.mutate(app.id)
-              }
-              disabled={install.isPending && !app.installed}
-            >
-              {app.installed
-                ? "Open"
-                : install.isPending && install.variables === app.id
-                  ? "Installing..."
-                  : "Install"}
-            </Button>
+            <div className="flex gap-2 justify-self-start">
+              {app.installed ? (
+                <>
+                  <Button variant="soft" onClick={() => onOpen(app.id)}>
+                    Open
+                  </Button>
+                  {app.id !== "store" && (
+                    <Button
+                      variant="danger"
+                      onClick={() => uninstall.mutate(app.id)}
+                      disabled={
+                        uninstall.isPending && uninstall.variables === app.id
+                      }
+                    >
+                      {uninstall.isPending && uninstall.variables === app.id
+                        ? "Removing..."
+                        : "Uninstall"}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={() => install.mutate(app.id)}
+                  disabled={install.isPending && install.variables === app.id}
+                >
+                  {install.isPending && install.variables === app.id
+                    ? "Installing..."
+                    : "Install"}
+                </Button>
+              )}
+            </div>
           </Card>
         ))}
       </div>

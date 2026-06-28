@@ -18,6 +18,7 @@ import type {
 } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
+import { SkeletonRow } from "../../lib/Skeleton";
 import { Badge, Button, Card, Input } from "../../lib/ui";
 import { GOpostClassic } from "../gopost/GOpostClassic";
 
@@ -222,7 +223,12 @@ export function BrowserApp({ user }: { user: User }) {
         <Card className="p-3">
           <h3 className="font-black text-ocean">Bookmarks</h3>
           <div className="mt-2 grid gap-1 text-sm">
-            {bookmarks.isError ? (
+            {bookmarks.isLoading ? (
+              <>
+                <SkeletonRow className="h-7" />
+                <SkeletonRow className="mt-1 h-7" />
+              </>
+            ) : bookmarks.isError ? (
               <ErrorNotice error={bookmarks.error} />
             ) : bookmarks.data?.bookmarks.length ? (
               bookmarks.data.bookmarks.map((item) => (
@@ -242,7 +248,13 @@ export function BrowserApp({ user }: { user: User }) {
         <Card className="p-3">
           <h3 className="font-black text-ocean">History</h3>
           <div className="mt-2 grid gap-1 text-sm">
-            {history.isError ? (
+            {history.isLoading ? (
+              <>
+                <SkeletonRow className="h-7" />
+                <SkeletonRow className="mt-1 h-7" />
+                <SkeletonRow className="mt-1 h-7" />
+              </>
+            ) : history.isError ? (
               <ErrorNotice error={history.error} />
             ) : history.data?.history.length ? (
               history.data.history.slice(0, 8).map((item) => (
