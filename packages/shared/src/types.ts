@@ -49,6 +49,7 @@ export type UserSettings = {
   dockStyle: "glass" | "solid";
   notifications: boolean;
   classicSounds: boolean;
+  darkMode: boolean;
 };
 
 export type DesktopState = {
