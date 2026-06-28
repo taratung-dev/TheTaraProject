@@ -1,0 +1,29 @@
+name: Docker Build Check
+
+on:
+  push:
+    branches: ["main", "master"]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.dockerignore'
+      - 'services/**'
+  pull_request:
+    branches: ["main", "master"]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.dockerignore'
+      - 'services/**'
+
+jobs:
+  docker-verify:
+    name: Verify Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test Docker Compose Build
+        run: docker compose build
