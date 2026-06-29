@@ -26080,14 +26080,66 @@ function useLiveTime() {
   }, []);
   return time;
 }
+var REMEMBERED_USER_KEY = "tara-games:remembered-user";
+function readRememberedUser() {
+  if (typeof window === "undefined")
+    return null;
+  try {
+    const stored = window.localStorage.getItem(REMEMBERED_USER_KEY);
+    if (!stored)
+      return null;
+    const user = JSON.parse(stored);
+    if (typeof user.username !== "string" || typeof user.displayName !== "string" || typeof user.avatarColor !== "string") {
+      return null;
+    }
+    return {
+      username: user.username,
+      displayName: user.displayName,
+      avatarColor: user.avatarColor
+    };
+  } catch {
+    return null;
+  }
+}
+function rememberUser(user) {
+  const rememberedUser = {
+    username: user.username,
+    displayName: user.displayName,
+    avatarColor: user.avatarColor
+  };
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(REMEMBERED_USER_KEY, JSON.stringify(rememberedUser));
+    } catch {}
+  }
+  return rememberedUser;
+}
+function forgetRememberedUser() {
+  if (typeof window === "undefined")
+    return;
+  try {
+    window.localStorage.removeItem(REMEMBERED_USER_KEY);
+  } catch {}
+}
+function rememberedInitials(user, fallback) {
+  const source = user?.displayName || fallback || "TG";
+  return source.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "TG";
+}
 function AuthForm() {
   const queryClient2 = useQueryClient();
+  const [rememberedUser, setRememberedUser] = import_react18.useState(() => readRememberedUser());
   const [mode, setMode] = import_react18.useState("Login");
-  const [username, setUsername] = import_react18.useState("");
+  const [username, setUsername] = import_react18.useState(() => rememberedUser?.username ?? "");
   const [displayName, setDisplayName] = import_react18.useState("");
   const [password, setPassword] = import_react18.useState("");
   const [error, setError] = import_react18.useState("");
+  const [capsLock, setCapsLock] = import_react18.useState(false);
+  const [shakeKey, setShakeKey] = import_react18.useState(0);
   const time = useLiveTime();
+  const isRememberedLogin = mode === "Login" && rememberedUser !== null;
+  const profileTitle = isRememberedLogin ? rememberedUser.displayName : mode === "Sign Up" ? "Create Account" : "Welcome Back";
+  const profileSubtitle = isRememberedLogin ? `@${rememberedUser.username}` : mode === "Sign Up" ? "Choose your TaraGames profile" : "Enter your username and password";
+  const avatarBackground = isRememberedLogin ? rememberedUser.avatarColor : "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(226,232,240,0.82))";
   const timeString = time.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit"
@@ -26098,18 +26150,49 @@ function AuthForm() {
     day: "numeric"
   });
   const auth = useMutation({
-    mutationFn: () => mode === "Login" ? api("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ username, password })
-    }) : api("/api/auth/signup", {
-      method: "POST",
-      body: JSON.stringify({ username, displayName, password })
-    }),
-    onSuccess: () => queryClient2.invalidateQueries({ queryKey: ["session"] }),
-    onError: (err) => setError(apiErrorMessage(err, "Authentication failed"))
+    mutationFn: () => {
+      const loginUsername = rememberedUser?.username ?? username;
+      return mode === "Login" ? api("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ username: loginUsername, password })
+      }) : api("/api/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({ username, displayName, password })
+      });
+    },
+    onSuccess: ({ user }) => {
+      setRememberedUser(rememberUser(user));
+      queryClient2.invalidateQueries({ queryKey: ["session"] });
+    },
+    onError: (err) => {
+      setError(apiErrorMessage(err, "Authentication failed"));
+      setShakeKey((key) => key + 1);
+    }
   });
+  function toggleMode() {
+    const nextMode = mode === "Login" ? "Sign Up" : "Login";
+    setMode(nextMode);
+    setError("");
+    setCapsLock(false);
+    setPassword("");
+    if (nextMode === "Sign Up") {
+      setUsername("");
+      setDisplayName("");
+      return;
+    }
+    setUsername(rememberedUser?.username ?? "");
+  }
+  function switchUser() {
+    forgetRememberedUser();
+    setRememberedUser(null);
+    setUsername("");
+    setDisplayName("");
+    setPassword("");
+    setError("");
+    setCapsLock(false);
+  }
   return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("main", {
-    className: "relative min-h-screen w-full overflow-hidden bg-gradient-to-tr from-lime-400 via-green-500 to-indigo-500 font-display selection:bg-white/30",
+    className: "auth-animated-wallpaper relative min-h-screen w-full overflow-hidden font-display selection:bg-white/30",
     children: [
       /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("header", {
         className: "absolute inset-x-0 top-0 flex items-center justify-end gap-3 p-3 pr-5 text-sm font-semibold text-white/90 drop-shadow-sm",
@@ -26139,14 +26222,18 @@ function AuthForm() {
         ]
       }, undefined, true, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("section", {
-        className: "absolute bottom-[20vh] left-1/2 flex -translate-x-1/2 flex-col items-center sm:bottom-[25vh]",
+        className: "absolute bottom-[13vh] left-1/2 flex -translate-x-1/2 flex-col items-center sm:bottom-[18vh]",
         children: [
           /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-            className: "relative mb-6",
+            className: "relative mb-4",
             children: [
               /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-                className: "flex h-20 w-20 items-end justify-center overflow-hidden rounded-full bg-slate-200 shadow-2xl ring-2 ring-white/20",
-                children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("svg", {
+                className: "flex h-20 w-20 items-center justify-center overflow-hidden rounded-full text-2xl font-bold text-slate-600 shadow-2xl ring-2 ring-white/25",
+                style: { background: avatarBackground },
+                children: isRememberedLogin ? /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("span", {
+                  className: "text-white drop-shadow-sm",
+                  children: rememberedInitials(rememberedUser, username)
+                }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("svg", {
                   className: "h-16 w-16 text-slate-400",
                   fill: "currentColor",
                   viewBox: "0 0 24 24",
@@ -26156,7 +26243,7 @@ function AuthForm() {
                 }, undefined, false, undefined, this)
               }, undefined, false, undefined, this),
               /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-                className: "absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-400 bg-green-500 shadow-sm",
+                className: "absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-300 bg-green-500 shadow-sm",
                 children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("svg", {
                   className: "h-3 w-3 text-white",
                   fill: "none",
@@ -26172,34 +26259,51 @@ function AuthForm() {
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+            className: "mb-4 min-h-[3rem] select-none text-center text-white drop-shadow-md",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("p", {
+                className: "text-lg font-semibold leading-tight",
+                children: profileTitle
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("p", {
+                className: "mt-1 text-xs font-semibold text-white/75",
+                children: profileSubtitle
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
           /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("form", {
-            className: "flex w-64 flex-col items-center gap-3",
+            className: `flex w-64 flex-col items-center gap-3 ${error ? "auth-shake" : ""}`,
             onSubmit: (event) => {
               event.preventDefault();
+              setError("");
               auth.mutate();
             },
             children: [
               error && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-                className: "mb-1 w-full rounded-lg bg-red-500/80 px-3 py-1.5 text-center text-xs font-semibold text-white backdrop-blur-md",
+                className: "mb-1 w-full rounded-lg bg-red-500/80 px-3 py-1.5 text-center text-xs font-semibold text-white shadow-lg backdrop-blur-md",
+                role: "alert",
                 children: error
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+              !isRememberedLogin && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
                 className: "w-full",
                 children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
-                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
-                  placeholder: "Username",
+                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40 disabled:opacity-60",
+                  placeholder: mode === "Sign Up" ? "Choose Username" : "Username",
                   value: username,
                   onChange: (e) => setUsername(e.target.value),
+                  disabled: auth.isPending,
                   required: true
                 }, undefined, false, undefined, this)
               }, undefined, false, undefined, this),
               mode === "Sign Up" && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
                 className: "w-full",
                 children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
-                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
+                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40 disabled:opacity-60",
                   placeholder: "Display Name",
                   value: displayName,
                   onChange: (e) => setDisplayName(e.target.value),
+                  disabled: auth.isPending,
                   required: true
                 }, undefined, false, undefined, this)
               }, undefined, false, undefined, this),
@@ -26208,16 +26312,25 @@ function AuthForm() {
                 children: [
                   /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
                     type: "password",
-                    className: "w-full rounded-full border border-white/20 bg-white/10 py-1.5 pl-4 pr-10 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
+                    className: "w-full rounded-full border border-white/20 bg-white/10 py-1.5 pl-4 pr-20 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40 disabled:opacity-60",
                     placeholder: mode === "Sign Up" ? "Create Password" : "Enter Password",
                     value: password,
                     onChange: (e) => setPassword(e.target.value),
+                    onKeyDown: (event) => setCapsLock(event.getModifierState("CapsLock")),
+                    onKeyUp: (event) => setCapsLock(event.getModifierState("CapsLock")),
+                    onBlur: () => setCapsLock(false),
+                    disabled: auth.isPending,
                     required: true
+                  }, undefined, false, undefined, this),
+                  capsLock && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("span", {
+                    className: "pointer-events-none absolute right-9 top-1/2 -translate-y-1/2 rounded-full bg-amber-200/95 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-950 shadow-sm",
+                    children: "Caps"
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
                     type: "submit",
                     disabled: auth.isPending,
                     className: "absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white opacity-0 transition-opacity hover:bg-white/40 focus:opacity-100 group-hover:opacity-100 disabled:opacity-50",
+                    "aria-label": mode === "Sign Up" ? "Create account" : "Log in",
                     children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(ChevronRight, {
                       size: 14,
                       strokeWidth: 3
@@ -26225,17 +26338,25 @@ function AuthForm() {
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
-                type: "button",
-                className: "mt-3 text-[11px] font-semibold tracking-wide text-white/70 transition-colors hover:text-white",
-                onClick: () => {
-                  setMode(mode === "Login" ? "Sign Up" : "Login");
-                  setError("");
-                },
-                children: mode === "Login" ? "New? Create an account" : "Cancel sign up"
-              }, undefined, false, undefined, this)
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "mt-3 flex items-center gap-3 text-[11px] font-semibold tracking-wide text-white/70",
+                children: [
+                  isRememberedLogin && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
+                    type: "button",
+                    className: "transition-colors hover:text-white",
+                    onClick: switchUser,
+                    children: "Switch user"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
+                    type: "button",
+                    className: "transition-colors hover:text-white",
+                    onClick: toggleMode,
+                    children: mode === "Login" ? "New? Create an account" : "Cancel sign up"
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this)
             ]
-          }, undefined, true, undefined, this)
+          }, shakeKey, true, undefined, this)
         ]
       }, undefined, true, undefined, this)
     ]
@@ -26269,4 +26390,4 @@ export {
   LogoutButton
 };
 
-//# debugId=40DB514E68665DED64756E2164756E21
+//# debugId=C3EE13FA935AF06564756E2164756E21
