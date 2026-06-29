@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AppRecord,
   DesktopState,
@@ -11,9 +11,14 @@ import type {
 } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorBoundary } from "../../lib/ErrorBoundary";
-import { QueryErrorCard } from "../../lib/feedback";
-import { type OpenApp, useDesktopStore } from "../../lib/desktop-state";
+import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
+import {
+  normalizeOpenApps,
+  type OpenApp,
+  useDesktopStore,
+} from "../../lib/desktop-state";
 import { Button, cn } from "../../lib/ui";
+import { useDebounce } from "../../lib/useDebounce";
 import { appLabel, appRegistry } from "./appRegistry";
 import { MenuBar } from "./MenuBar";
 import { StartMenu } from "./StartMenu";
@@ -40,6 +45,16 @@ export function DesktopShell({ user }: { user: User }) {
     queryKey: ["apps"],
     queryFn: () => api<{ apps: AppRecord[] }>("/api/apps"),
   });
+  const syncDesktopState = useMutation({
+    mutationFn: (openedApps: OpenApp[]) =>
+      api<{ desktopState: DesktopState }>("/api/desktop/state", {
+        method: "PATCH",
+        body: JSON.stringify({ openedApps }),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["desktop-state"], data);
+    },
+  });
   const settings = useQuery({
     queryKey: ["settings"],
     queryFn: () => api<{ settings: UserSettings }>("/api/settings"),
@@ -63,6 +78,18 @@ export function DesktopShell({ user }: { user: User }) {
 
   const installedApps =
     apps.data?.apps.filter((app) => app.installed || app.id === "store") ?? [];
+  const dockAppIds = desktop.data?.desktopState.dockApps ?? [];
+  const launcherApps = useMemo(() => {
+    const installedAppsById = new Map(
+      installedApps.map((app) => [app.id, app] as const),
+    );
+    const pinnedAppIds = new Set(dockAppIds);
+    const pinnedApps = dockAppIds
+      .map((appId) => installedAppsById.get(appId))
+      .filter((app): app is AppRecord => Boolean(app));
+    const extraApps = installedApps.filter((app) => !pinnedAppIds.has(app.id));
+    return [...pinnedApps, ...extraApps];
+  }, [dockAppIds, installedApps]);
 
   const allNotifications = notifications.data?.notifications ?? [];
   const messengerUnread = allNotifications.filter(
@@ -76,26 +103,61 @@ export function DesktopShell({ user }: { user: User }) {
 
   const recentNote = notes.data?.notes[0] ?? null;
   const recentDrawing = drawings.data?.drawings[0] ?? null;
+  const serverOpenedApps = useMemo(
+    () => normalizeOpenApps(desktop.data?.desktopState.openedApps ?? []),
+    [desktop.data?.desktopState.openedApps],
+  );
+  const serverOpenedAppsJson = useMemo(
+    () => JSON.stringify(serverOpenedApps),
+    [serverOpenedApps],
+  );
+  const debouncedOpenApps = useDebounce(openApps, 400);
+  const debouncedOpenAppsJson = useMemo(
+    () => JSON.stringify(debouncedOpenApps),
+    [debouncedOpenApps],
+  );
+  const hasHydratedDesktopState = useRef(false);
+  const lastDesktopSyncRequest = useRef<string | null>(null);
   const recentNotePreview = recentNote
     ? recentNote.body.replace(/\s+/g, " ").trim() || "Empty note"
     : "Open Notes Mini to capture ideas, plans, and checklists.";
   const recentDrawingSummary = recentDrawing
     ? `${recentDrawing.width} × ${recentDrawing.height} pixels · updated ${new Date(recentDrawing.updatedAt).toLocaleDateString()}`
     : "Launch Pixel Paint to start a new retro canvas.";
-  const recentAppRecords = recentApps
-    .slice()
-    .reverse()
-    .map((appId) => installedApps.find((app) => app.id === appId))
-    .filter((app): app is AppRecord => Boolean(app));
-
-  const openedAppsJson =
-    JSON.stringify(desktop.data?.desktopState.openedApps) ?? null;
+  const recentAppRecords = useMemo(() => {
+    const launcherAppsById = new Map(
+      launcherApps.map((app) => [app.id, app] as const),
+    );
+    return recentApps
+      .slice()
+      .reverse()
+      .map((appId) => launcherAppsById.get(appId))
+      .filter((app): app is AppRecord => Boolean(app));
+  }, [launcherApps, recentApps]);
 
   useEffect(() => {
-    if (!desktop.data?.desktopState.openedApps.length) return;
-    hydrateOpenedApps(desktop.data.desktopState.openedApps);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openedAppsJson]);
+    if (!desktop.isSuccess || hasHydratedDesktopState.current) return;
+    hydrateOpenedApps(serverOpenedApps);
+    hasHydratedDesktopState.current = true;
+  }, [desktop.isSuccess, hydrateOpenedApps, serverOpenedApps]);
+
+  useEffect(() => {
+    if (!desktop.isSuccess) return;
+    if (debouncedOpenAppsJson === serverOpenedAppsJson) {
+      lastDesktopSyncRequest.current = null;
+      return;
+    }
+    if (syncDesktopState.isPending) return;
+    if (lastDesktopSyncRequest.current === debouncedOpenAppsJson) return;
+    lastDesktopSyncRequest.current = debouncedOpenAppsJson;
+    syncDesktopState.mutate(debouncedOpenApps);
+  }, [
+    debouncedOpenApps,
+    debouncedOpenAppsJson,
+    desktop.isSuccess,
+    serverOpenedAppsJson,
+    syncDesktopState,
+  ]);
 
   useEffect(() => {
     const socket = new WebSocket(
@@ -146,9 +208,18 @@ export function DesktopShell({ user }: { user: User }) {
         darkMode={darkMode}
       />
 
+      {syncDesktopState.isError && (
+        <div className="fixed left-1/2 top-12 z-50 w-full max-w-sm -translate-x-1/2 px-3">
+          <ErrorNotice
+            error={syncDesktopState.error}
+            message="Desktop session changes could not be saved."
+          />
+        </div>
+      )}
+
       {startOpen && (
         <StartMenu
-          apps={installedApps}
+          apps={launcherApps}
           recentApps={recentAppRecords}
           recentNote={recentNote}
           recentDrawing={recentDrawing}
@@ -299,7 +370,7 @@ export function DesktopShell({ user }: { user: User }) {
       </section>
 
       <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
-        {installedApps.map((app) => (
+        {launcherApps.map((app) => (
           <button
             key={app.id}
             type="button"
@@ -318,7 +389,7 @@ export function DesktopShell({ user }: { user: User }) {
       </section>
 
       <section className="absolute right-5 top-16 hidden gap-4 md:grid">
-        {installedApps.map((app) => (
+        {launcherApps.map((app) => (
           <DesktopIcon
             key={app.id}
             app={app}
@@ -359,7 +430,7 @@ export function DesktopShell({ user }: { user: User }) {
       </section>
 
       <Dock
-        installedApps={installedApps}
+        installedApps={launcherApps}
         messengerUnread={messengerUnread}
         gopostUnread={gopostUnread}
         onOpen={openApp}
