@@ -8,11 +8,19 @@ import {
   type Route,
 } from "../../_lib/http";
 import {
+  createDrawing,
+  createNote,
   db,
+  deleteDrawing,
+  deleteNote,
   desktopState,
+  listDrawings,
+  listNotes,
   migratePlatform,
   seedPlatform,
   settings,
+  updateDrawing,
+  updateNote,
 } from "./repo";
 
 await migratePlatform();
@@ -32,9 +40,20 @@ const routes: Route[] = [
       FROM apps a ORDER BY a.category, a.name
     `,
         )
-        .all(userId ?? 0)
-        .map((row: any) => ({ ...row, installed: Boolean(row.installed) }));
-      return json({ apps: rows });
+        .all(userId ?? 0) as Array<{
+        id: string;
+        name: string;
+        icon: string;
+        description: string;
+        category: string;
+        installed: number;
+      }>;
+      return json({
+        apps: rows.map((row) => ({
+          ...row,
+          installed: Boolean(row.installed),
+        })),
+      });
     },
   ],
   [
@@ -44,12 +63,10 @@ const routes: Route[] = [
     ({ params, userId }) => {
       const unauthorized = requireUser(userId);
       if (unauthorized) return unauthorized;
-      // Verify the app exists before installing to prevent phantom entries.
       const appExists = db
         .query("SELECT 1 FROM apps WHERE id = ?")
         .get(params.id);
       if (!appExists) return json({ error: "App not found." }, 404);
-      // Wrap install + dock update in a transaction for atomicity.
       db.transaction(() => {
         db.prepare(
           "INSERT OR IGNORE INTO installed_apps (user_id, app_id) VALUES (?, ?)",
@@ -157,6 +174,112 @@ const routes: Route[] = [
         next.wallpaper,
       );
       return json({ desktopState: desktopState(userId!) });
+    },
+  ],
+  [
+    "GET",
+    /^\/notes$/,
+    [],
+    ({ userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      return json({ notes: listNotes(userId!) });
+    },
+  ],
+  [
+    "POST",
+    /^\/notes$/,
+    [],
+    async ({ request, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{ title?: string; body?: string }>(request);
+      if (!input) return json({ error: "Invalid request body." }, 400);
+      return json({ note: createNote(userId!, input) }, 201);
+    },
+  ],
+  [
+    "PATCH",
+    /^\/notes\/([^/]+)$/,
+    ["id"],
+    async ({ request, params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{ title?: string; body?: string }>(request);
+      if (!input) return json({ error: "Invalid request body." }, 400);
+      const note = updateNote(userId!, Number(params.id), input);
+      return note ? json({ note }) : json({ error: "Note not found." }, 404);
+    },
+  ],
+  [
+    "DELETE",
+    /^\/notes\/([^/]+)$/,
+    ["id"],
+    ({ params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      return deleteNote(userId!, Number(params.id))
+        ? json({ ok: true })
+        : json({ error: "Note not found." }, 404);
+    },
+  ],
+  [
+    "GET",
+    /^\/paint\/drawings$/,
+    [],
+    ({ userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      return json({ drawings: listDrawings(userId!) });
+    },
+  ],
+  [
+    "POST",
+    /^\/paint\/drawings$/,
+    [],
+    async ({ request, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{
+        name?: string;
+        width?: number;
+        height?: number;
+        pixels?: string[];
+      }>(request);
+      if (!input) return json({ error: "Invalid request body." }, 400);
+      return json({ drawing: createDrawing(userId!, input) }, 201);
+    },
+  ],
+  [
+    "PATCH",
+    /^\/paint\/drawings\/([^/]+)$/,
+    ["id"],
+    async ({ request, params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{
+        name?: string;
+        width?: number;
+        height?: number;
+        pixels?: string[];
+      }>(request);
+      if (!input) return json({ error: "Invalid request body." }, 400);
+      const drawing = updateDrawing(userId!, Number(params.id), input);
+      return drawing
+        ? json({ drawing })
+        : json({ error: "Drawing not found." }, 404);
+    },
+  ],
+  [
+    "DELETE",
+    /^\/paint\/drawings\/([^/]+)$/,
+    ["id"],
+    ({ params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      return deleteDrawing(userId!, Number(params.id))
+        ? json({ ok: true })
+        : json({ error: "Drawing not found." }, 404);
     },
   ],
   [

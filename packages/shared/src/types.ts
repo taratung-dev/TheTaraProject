@@ -33,6 +33,9 @@ export type Profile = {
   user: User;
   postCount: number;
   fanCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isMe: boolean;
 };
 
 export type AppRecord = {
@@ -119,4 +122,20 @@ export type BrowserMetadata = {
   description: string;
   embeddable: boolean;
   reason?: string;
+};
+
+export type Note = {
+  id: number;
+  title: string;
+  body: string;
+  updatedAt: string;
+};
+
+export type PaintDrawing = {
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  pixels: string[];
+  updatedAt: string;
 };

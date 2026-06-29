@@ -57,6 +57,14 @@ export function migrateSocial() {
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       PRIMARY KEY (post_id, user_id)
     );
+
+    CREATE TABLE IF NOT EXISTS follows (
+      follower_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      followee_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (follower_id, followee_id),
+      CHECK (follower_id != followee_id)
+    );
   `);
 }
 
@@ -139,6 +147,16 @@ export function seedSocial() {
     "INSERT INTO posts (author_id, body, image_style) VALUES (?, ?, ?)",
   );
   for (const post of posts) insert.run(...post);
+
+  db.prepare(
+    "INSERT OR IGNORE INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(2, 1);
+  db.prepare(
+    "INSERT OR IGNORE INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(3, 1);
+  db.prepare(
+    "INSERT OR IGNORE INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(1, 2);
 }
 
 export function postRows(
@@ -206,7 +224,19 @@ export function commentsForPost(postId: number) {
   }));
 }
 
-export function profile(username: string) {
+export function allUsers() {
+  return db
+    .query(
+      `
+      SELECT id, username, display_name AS displayName, avatar_color AS avatarColor
+      FROM users
+      ORDER BY display_name COLLATE NOCASE
+    `,
+    )
+    .all() as UserRow[];
+}
+
+export function profile(username: string, viewerId: number | null = null) {
   const user = db
     .query(
       "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor FROM users WHERE username = ?",
@@ -214,7 +244,43 @@ export function profile(username: string) {
     .get(username) as UserRow | null;
   if (!user) return null;
   const row = db
-    .query("SELECT COUNT(*) AS postCount FROM posts WHERE author_id = ?")
-    .get(user.id) as { postCount: number };
-  return { user, postCount: row.postCount, fanCount: 248 + user.id };
+    .query(
+      `
+      SELECT
+        (SELECT COUNT(*) FROM posts WHERE author_id = ?) AS postCount,
+        (SELECT COUNT(*) FROM follows WHERE followee_id = ?) AS fanCount,
+        (SELECT COUNT(*) FROM follows WHERE follower_id = ?) AS followingCount,
+        EXISTS(
+          SELECT 1 FROM follows WHERE follower_id = ? AND followee_id = ?
+        ) AS isFollowing
+    `,
+    )
+    .get(user.id, user.id, user.id, viewerId ?? 0, user.id) as {
+    postCount: number;
+    fanCount: number;
+    followingCount: number;
+    isFollowing: number;
+  };
+  return {
+    user,
+    postCount: row.postCount,
+    fanCount: row.fanCount,
+    followingCount: row.followingCount,
+    isFollowing: Boolean(row.isFollowing),
+    isMe: viewerId === user.id,
+  };
+}
+
+export function followUser(followerId: number, followeeId: number) {
+  if (followerId === followeeId) return false;
+  db.prepare(
+    "INSERT OR IGNORE INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(followerId, followeeId);
+  return true;
+}
+
+export function unfollowUser(followerId: number, followeeId: number) {
+  db.prepare(
+    "DELETE FROM follows WHERE follower_id = ? AND followee_id = ?",
+  ).run(followerId, followeeId);
 }

@@ -1,10 +1,12 @@
 import { type CSSProperties, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Comment, Post, Profile, User } from "../../lib/types";
+import type { OpenApp } from "../../lib/desktop-state";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { useDebounce } from "../../lib/useDebounce";
 import { Skeleton, SkeletonPost } from "../../lib/Skeleton";
+import { useRouter } from "../../lib/router";
 
 function initials(user?: User | null) {
   return (
@@ -29,18 +31,36 @@ function postMeta(index: number) {
   return times[index % times.length];
 }
 
+function menuButtonClass(active: boolean) {
+  return active ? "gp-menu-button active" : "gp-menu-button";
+}
+
 export function GOpostClassic({
   user,
   embedded = false,
+  onOpenApp,
 }: {
   user: User | null;
   embedded?: boolean;
+  onOpenApp?: (app: OpenApp) => void;
 }) {
+  const { navigate } = useRouter();
   const [body, setBody] = useState("");
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<"feed" | "profile" | "photos">("feed");
+  const [view, setView] = useState<"feed" | "profile" | "photos" | "people">(
+    "feed",
+  );
+  const [selectedUsername, setSelectedUsername] = useState<string | null>(
+    user?.username ?? null,
+  );
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
+
+  const activeProfileUsername =
+    view === "profile"
+      ? (selectedUsername ?? user?.username ?? null)
+      : (user?.username ?? null);
+
   const posts = useQuery({
     queryKey: ["posts", debouncedSearch],
     queryFn: () =>
@@ -50,14 +70,26 @@ export function GOpostClassic({
           : "/api/posts",
       ),
   });
+
   const profile = useQuery({
-    queryKey: ["profile", user?.username],
+    queryKey: ["profile", activeProfileUsername],
     queryFn: () =>
-      user
-        ? api<{ profile: Profile }>(`/api/users/${user.username}`)
+      activeProfileUsername
+        ? api<{ profile: Profile }>(`/api/users/${activeProfileUsername}`)
         : Promise.resolve({ profile: null as unknown as Profile }),
-    enabled: Boolean(user),
+    enabled: Boolean(activeProfileUsername),
   });
+
+  const people = useQuery({
+    queryKey: ["people", debouncedSearch],
+    queryFn: () =>
+      api<{ users: Profile[] }>(
+        debouncedSearch
+          ? `/api/users?q=${encodeURIComponent(debouncedSearch)}`
+          : "/api/users",
+      ),
+  });
+
   const create = useMutation({
     mutationFn: () =>
       api<{ post: Post }>("/api/posts", {
@@ -71,17 +103,44 @@ export function GOpostClassic({
     },
   });
 
-  const postCount =
-    profile.data?.profile.postCount ?? posts.data?.posts.length ?? 13;
-  const fanCount = profile.data?.profile.fanCount ?? 248;
+  const follow = useMutation({
+    mutationFn: ({
+      username,
+      following,
+    }: {
+      username: string;
+      following: boolean;
+    }) =>
+      api<{ profile: Profile }>(`/api/users/${username}/follow`, {
+        method: following ? "DELETE" : "POST",
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile", variables.username],
+      });
+      queryClient.invalidateQueries({ queryKey: ["people"] });
+    },
+  });
+
+  const shownProfile = profile.data?.profile ?? null;
+  const sidebarUser = shownProfile?.user ?? user;
+  const postCount = shownProfile?.postCount ?? posts.data?.posts.length ?? 13;
+  const fanCount = shownProfile?.fanCount ?? 0;
+  const followingCount = shownProfile?.followingCount ?? 0;
 
   const visiblePosts = useMemo(() => {
     const all = posts.data?.posts ?? [];
-    if (view === "profile" && user)
-      return all.filter((p) => p.author.username === user.username);
+    if (view === "profile" && activeProfileUsername) {
+      return all.filter((p) => p.author.username === activeProfileUsername);
+    }
     if (view === "photos") return all.filter((p) => p.imageStyle);
     return all;
-  }, [posts.data, view, user]);
+  }, [activeProfileUsername, posts.data, view]);
+
+  const openDesktopApp = (app: OpenApp) => {
+    if (onOpenApp) onOpenApp(app);
+    else navigate("/");
+  };
 
   return (
     <div className={embedded ? "gp-page gp-embedded" : "gp-page"}>
@@ -93,13 +152,21 @@ export function GOpostClassic({
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search GOpost!"
+            placeholder={view === "people" ? "Search people" : "Search GOpost!"}
           />
           <nav className="gp-nav" aria-label="Main navigation">
-            <span>Home</span>
-            <span>People</span>
-            <span>Messages</span>
-            <span>Settings</span>
+            <button type="button" onClick={() => setView("feed")}>
+              Home
+            </button>
+            <button type="button" onClick={() => setView("people")}>
+              People
+            </button>
+            <button type="button" onClick={() => openDesktopApp("messenger")}>
+              Messages
+            </button>
+            <button type="button" onClick={() => openDesktopApp("settings")}>
+              Settings
+            </button>
           </nav>
         </div>
       </header>
@@ -111,17 +178,19 @@ export function GOpostClassic({
               className="gp-avatar gp-big"
               style={{
                 background:
-                  user?.avatarColor ??
+                  sidebarUser?.avatarColor ??
                   "linear-gradient(135deg, #ffd166, #f25f8c)",
               }}
             >
-              {initials(user)}
+              {initials(sidebarUser)}
             </div>
-            <h1>GOpost!</h1>
+            <h1>{shownProfile?.user.displayName ?? "GOpost!"}</h1>
             <p>
-              {user
-                ? `Signed in as ${user.displayName}`
-                : "Share quick updates, big moods, and tiny internet treasures."}
+              {shownProfile
+                ? `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.`
+                : user
+                  ? `Signed in as ${user.displayName}`
+                  : "Share quick updates, big moods, and tiny internet treasures."}
             </p>
             {profile.isError && (
               <ErrorNotice
@@ -138,12 +207,32 @@ export function GOpostClassic({
                 <b>{fanCount}</b>Fans
               </div>
               <div className="gp-stat">
-                <b>17</b>Clubs
+                <b>{followingCount}</b>Following
               </div>
             </div>
+            {shownProfile && !shownProfile.isMe && user && (
+              <button
+                type="button"
+                className="gp-post-button mt-3"
+                onClick={() =>
+                  follow.mutate({
+                    username: shownProfile.user.username,
+                    following: shownProfile.isFollowing,
+                  })
+                }
+                disabled={follow.isPending}
+              >
+                {follow.isPending
+                  ? "Saving..."
+                  : shownProfile.isFollowing
+                    ? "Following"
+                    : "Follow"}
+              </button>
+            )}
             <div className="gp-menu">
               <button
                 type="button"
+                className={menuButtonClass(view === "feed")}
                 onClick={() => {
                   setView("feed");
                   setSearch("");
@@ -151,131 +240,257 @@ export function GOpostClassic({
               >
                 News Feed
               </button>
-              <button type="button" onClick={() => setView("profile")}>
+              <button
+                type="button"
+                className={menuButtonClass(view === "profile")}
+                onClick={() => {
+                  setSelectedUsername(user?.username ?? null);
+                  setView("profile");
+                }}
+              >
                 My Profile
               </button>
-              <button type="button" onClick={() => setView("photos")}>
+              <button
+                type="button"
+                className={menuButtonClass(view === "photos")}
+                onClick={() => setView("photos")}
+              >
                 Photo Wall
               </button>
-              <span>Games &amp; Apps</span>
-              <span>Top Friends</span>
+              <button
+                type="button"
+                className={menuButtonClass(view === "people")}
+                onClick={() => setView("people")}
+              >
+                People Finder
+              </button>
+              <button
+                type="button"
+                className="gp-menu-button"
+                onClick={() => openDesktopApp("messenger")}
+              >
+                Messages
+              </button>
+              <button
+                type="button"
+                className="gp-menu-button"
+                onClick={() => openDesktopApp("settings")}
+              >
+                Account Settings
+              </button>
             </div>
           </section>
         </aside>
 
         <section className="gp-center-col" aria-label="GOpost feed">
-          <form
-            className="gp-composer"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (body.trim()) create.mutate();
-            }}
-          >
-            <div className="gp-composer-title">Create a GOpost</div>
-            {user ? (
-              <textarea
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                placeholder="What's happening today?"
-              />
-            ) : (
-              <div className="gp-readonly">
-                Login from macOS Dev to create posts, comment, and like.
+          {view !== "people" && (
+            <form
+              className="gp-composer"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (body.trim()) create.mutate();
+              }}
+            >
+              <div className="gp-composer-title">
+                {view === "profile"
+                  ? "Post to your profile"
+                  : "Create a GOpost"}
               </div>
-            )}
-            {create.isError && (
-              <ErrorNotice error={create.error} className="mt-3" />
-            )}
-            <div className="gp-composer-actions">
-              <div className="gp-tool-row">
-                <span>Photo</span>
-                <span>Mood</span>
-                <span>Sticker</span>
+              {user ? (
+                <textarea
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  placeholder="What's happening today?"
+                />
+              ) : (
+                <div className="gp-readonly">
+                  Login from macOS Dev to create posts, comment, and like.
+                </div>
+              )}
+              {create.isError && (
+                <ErrorNotice error={create.error} className="mt-3" />
+              )}
+              <div className="gp-composer-actions">
+                <div className="gp-tool-row">
+                  <span>Photo</span>
+                  <span>Mood</span>
+                  <span>Sticker</span>
+                </div>
+                <button
+                  className="gp-post-button"
+                  type="submit"
+                  disabled={!user || !body.trim() || create.isPending}
+                >
+                  {create.isPending ? "Posting..." : "Post"}
+                </button>
               </div>
-              <button
-                className="gp-post-button"
-                type="submit"
-                disabled={!user || !body.trim() || create.isPending}
-              >
-                {create.isPending ? "Posting..." : "Post"}
-              </button>
-            </div>
-          </form>
+            </form>
+          )}
 
-          <div className="gp-feed">
-            {posts.isLoading && (
-              <>
-                <SkeletonPost />
-                <SkeletonPost />
-                <SkeletonPost />
-              </>
-            )}
-            {posts.isError && !posts.data?.posts.length && (
-              <QueryErrorCard
-                title="GOpost feed failed to load"
-                error={posts.error}
-                onRetry={() => void posts.refetch()}
-              />
-            )}
-            {posts.isError && posts.data?.posts.length ? (
-              <ErrorNotice error={posts.error} className="mb-3" />
-            ) : null}
-            {posts.data?.posts.length === 0 && (
-              <div className="gp-post">No posts found.</div>
-            )}
-            {visiblePosts.map((post, index) => (
-              <ClassicPost
-                key={post.id}
-                post={post}
-                canWrite={Boolean(user)}
-                index={index}
-              />
-            ))}
-          </div>
+          {view === "people" ? (
+            <section className="gp-panel">
+              <h2>People Finder</h2>
+              <div className="gp-feed">
+                {people.isLoading && (
+                  <>
+                    <SkeletonPost />
+                    <SkeletonPost />
+                  </>
+                )}
+                {people.isError && (
+                  <QueryErrorCard
+                    title="People failed to load"
+                    error={people.error}
+                    onRetry={() => void people.refetch()}
+                  />
+                )}
+                {people.data?.users.map((person) => (
+                  <article key={person.user.id} className="gp-post">
+                    <div className="gp-post-head">
+                      <div
+                        className="gp-avatar"
+                        style={{ background: person.user.avatarColor }}
+                      >
+                        {initials(person.user)}
+                      </div>
+                      <div>
+                        <div className="gp-name">{person.user.displayName}</div>
+                        <div className="gp-meta">@{person.user.username}</div>
+                      </div>
+                    </div>
+                    <p>
+                      {person.postCount} posts · {person.fanCount} fans ·{" "}
+                      {person.followingCount} following
+                    </p>
+                    <div className="gp-post-actions">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedUsername(person.user.username);
+                          setView("profile");
+                        }}
+                      >
+                        View Profile
+                      </button>
+                      {!person.isMe && user && (
+                        <button
+                          type="button"
+                          disabled={follow.isPending}
+                          onClick={() =>
+                            follow.mutate({
+                              username: person.user.username,
+                              following: person.isFollowing,
+                            })
+                          }
+                        >
+                          {person.isFollowing ? "Following" : "Follow"}
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <div className="gp-feed">
+              {posts.isLoading && (
+                <>
+                  <SkeletonPost />
+                  <SkeletonPost />
+                  <SkeletonPost />
+                </>
+              )}
+              {posts.isError && !posts.data?.posts.length && (
+                <QueryErrorCard
+                  title="GOpost feed failed to load"
+                  error={posts.error}
+                  onRetry={() => void posts.refetch()}
+                />
+              )}
+              {posts.isError && posts.data?.posts.length ? (
+                <ErrorNotice error={posts.error} className="mb-3" />
+              ) : null}
+              {posts.data?.posts.length === 0 && (
+                <div className="gp-post">No posts found.</div>
+              )}
+              {visiblePosts.map((post, index) => (
+                <ClassicPost
+                  key={post.id}
+                  post={post}
+                  canWrite={Boolean(user)}
+                  index={index}
+                  onViewProfile={(username) => {
+                    setSelectedUsername(username);
+                    setView("profile");
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <aside className="gp-right-col">
           <section className="gp-panel">
-            <h2>Trending 2017</h2>
-            <ul className="gp-trend-list">
-              <li>
-                <b>#ProfileSong</b>
-                <span>1,204 posts</span>
-              </li>
-              <li>
-                <b>#StickerMood</b>
-                <span>842 posts</span>
-              </li>
-              <li>
-                <b>#PhotoWall</b>
-                <span>511 posts</span>
-              </li>
-              <li>
-                <b>#LunchPoll</b>
-                <span>306 posts</span>
-              </li>
-            </ul>
+            <h2>{view === "people" ? "People Tips" : "Trending 2017"}</h2>
+            {view === "people" ? (
+              <ul className="gp-trend-list">
+                <li>
+                  <b>Search by name</b>
+                  <span>Find GOpost friends fast</span>
+                </li>
+                <li>
+                  <b>Follow fans</b>
+                  <span>Keep tabs on favorite profiles</span>
+                </li>
+                <li>
+                  <b>Open Messenger</b>
+                  <span>Jump straight into chats</span>
+                </li>
+              </ul>
+            ) : (
+              <ul className="gp-trend-list">
+                <li>
+                  <b>#ProfileSong</b>
+                  <span>1,204 posts</span>
+                </li>
+                <li>
+                  <b>#StickerMood</b>
+                  <span>842 posts</span>
+                </li>
+                <li>
+                  <b>#PhotoWall</b>
+                  <span>511 posts</span>
+                </li>
+                <li>
+                  <b>#LunchPoll</b>
+                  <span>306 posts</span>
+                </li>
+              </ul>
+            )}
           </section>
           <section className="gp-panel gp-friends-panel">
             <h2>Online Friends</h2>
             <ul className="gp-friend-list">
-              <li>
-                <span className="gp-mini"></span>Alya Star
-              </li>
-              <li>
-                <span className="gp-mini"></span>Joko Byte
-              </li>
-              <li>
-                <span className="gp-mini"></span>Nina Orbit
-              </li>
-              <li>
-                <span className="gp-mini"></span>Tara Games
-              </li>
+              {(people.data?.users ?? []).slice(0, 4).map((friend) => (
+                <li key={friend.user.id}>
+                  <span className="gp-mini"></span>
+                  <button
+                    type="button"
+                    className="gp-inline-link"
+                    onClick={() => {
+                      setSelectedUsername(friend.user.username);
+                      setView("profile");
+                    }}
+                  >
+                    {friend.user.displayName}
+                  </button>
+                </li>
+              ))}
             </ul>
             <div className="gp-ad">
               GOpost! Classic
               <br />
-              Now with more shine.
+              Now with real profile follows.
             </div>
           </section>
         </aside>
@@ -294,10 +509,12 @@ function ClassicPost({
   post,
   canWrite,
   index,
+  onViewProfile,
 }: {
   post: Post;
   canWrite: boolean;
   index: number;
+  onViewProfile: (username: string) => void;
 }) {
   const [comment, setComment] = useState("");
   const [editing, setEditing] = useState(false);
@@ -350,7 +567,13 @@ function ClassicPost({
           {initials(post.author)}
         </div>
         <div>
-          <div className="gp-name">{post.author.displayName}</div>
+          <button
+            type="button"
+            className="gp-inline-link gp-name-button"
+            onClick={() => onViewProfile(post.author.username)}
+          >
+            {post.author.displayName}
+          </button>
           <div className="gp-meta">{postMeta(index)}</div>
         </div>
       </div>

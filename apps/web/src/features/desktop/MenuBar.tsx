@@ -15,7 +15,11 @@ export function MenuBar({
   user: User;
   startOpen: boolean;
   setStartOpen: (open: boolean) => void;
-  notifications: { data?: { notifications: Notification[] }; isError: boolean; error: unknown };
+  notifications: {
+    data?: { notifications: Notification[] };
+    isError: boolean;
+    error: unknown;
+  };
   darkMode: boolean;
 }) {
   const queryClient = useQueryClient();
@@ -58,7 +62,7 @@ export function MenuBar({
           <span className="hidden sm:inline">Window</span>
         </div>
         <div className="flex items-center gap-2">
-          <span>{user.displayName}</span>
+          <span className="hidden sm:inline">{user.displayName}</span>
           <Tooltip label="Unread notifications">
             <span className="relative inline-flex">
               <Bell size={15} />
@@ -78,7 +82,7 @@ export function MenuBar({
                 disabled={markAllRead.isPending}
               >
                 <CheckCheck size={14} />
-                Mark all read
+                <span className="hidden sm:inline">Mark all read</span>
               </Button>
             </Tooltip>
           )}
@@ -88,7 +92,7 @@ export function MenuBar({
             onClick={() => logout.mutate()}
           >
             <LogOut size={14} />
-            Logout
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </header>

@@ -3,22 +3,30 @@ import { cn } from "./ui";
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn(
-        "animate-pulse rounded-lg bg-slate-200/70",
-        className,
-      )}
+      className={cn("animate-pulse rounded-lg bg-slate-200/70", className)}
     />
   );
 }
 
-export function SkeletonCard({ lines = 3, className }: { lines?: number; className?: string }) {
+export function SkeletonCard({
+  lines = 3,
+  className,
+}: {
+  lines?: number;
+  className?: string;
+}) {
   return (
-    <div className={cn("rounded-xl border border-white/60 bg-white/75 p-4 shadow-sm backdrop-blur", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-white/60 bg-white/75 p-4 shadow-sm backdrop-blur",
+        className,
+      )}
+    >
       <Skeleton className="mb-3 h-5 w-2/5" />
-      {Array.from({ length: lines }, (_, i) => (
+      {Array.from({ length: lines }, (_, index) => (
         <Skeleton
-          key={i}
-          className={cn("mt-2 h-3", i === lines - 1 ? "w-3/5" : "w-full")}
+          key={`skeleton-line-${lines}-${index}`}
+          className={cn("mt-2 h-3", index === lines - 1 ? "w-3/5" : "w-full")}
         />
       ))}
     </div>

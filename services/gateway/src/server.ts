@@ -36,7 +36,13 @@ const indexHtml = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2f80ed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>macOS Dev 3.4.6 + GOpost!</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon-192.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icon-192.svg" />
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
@@ -46,8 +52,9 @@ const indexHtml = `<!DOCTYPE html>
 </html>`;
 
 function staticFile(pathname: string) {
-  const filePath = join(process.cwd(), "public", pathname);
-  if (!existsSync(filePath)) return null;
+  const relativePath = pathname.replace(/^\/+/, "");
+  const filePath = join(process.cwd(), "public", relativePath);
+  if (!relativePath || !existsSync(filePath)) return null;
   return new Response(Bun.file(filePath));
 }
 
@@ -88,7 +95,9 @@ function targetFor(pathname: string) {
     pathname.startsWith("/api/apps") ||
     pathname.startsWith("/api/settings") ||
     pathname.startsWith("/api/desktop") ||
-    pathname.startsWith("/api/minecraft")
+    pathname.startsWith("/api/minecraft") ||
+    pathname.startsWith("/api/notes") ||
+    pathname.startsWith("/api/paint")
   )
     return [PLATFORM_URL, pathname.replace(/^\/api/, ""), "platform"] as const;
   if (pathname.startsWith("/api/browser"))
@@ -105,9 +114,6 @@ async function proxy(
 ) {
   const url = new URL(request.url);
   const headers = new Headers(request.headers);
-  // Always strip the client-supplied x-user-id header before forwarding.
-  // The gateway is the only authority that may set this header, based on
-  // the verified session cookie from the auth service.
   headers.delete("x-user-id");
   if (userId) headers.set("x-user-id", String(userId));
   headers.delete("host");
@@ -155,10 +161,12 @@ const server = Bun.serve({
       if (server.upgrade(request, { data: undefined })) return undefined;
       return json({ error: "WebSocket upgrade failed" }, 400);
     }
-    if (url.pathname.startsWith("/assets/")) {
+
+    if (!url.pathname.startsWith("/api/")) {
       const file = staticFile(url.pathname);
       if (file) return file;
     }
+
     if (url.pathname.startsWith("/api/")) {
       const target = targetFor(url.pathname);
       if (!target) return json({ error: "Gateway route not found" }, 404);
@@ -180,6 +188,7 @@ const server = Bun.serve({
         throw error;
       }
     }
+
     return new Response(indexHtml, {
       headers: { "content-type": "text/html; charset=utf-8" },
     });

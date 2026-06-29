@@ -9,9 +9,6 @@ export const db = new Database("data/platform.sqlite", { create: true });
 db.run("PRAGMA foreign_keys = ON");
 
 export function migrate() {
-  // All DDL is defined in service repos — call their migrate functions.
-  // Each service opens its own connection to the same database file,
-  // so tables are created once in the shared SQLite file.
   migrateAuth();
   migrateSocial();
   migrateRealtime();
@@ -37,6 +34,13 @@ export async function seed() {
   for (const user of users) insertUser.run(...user);
 
   const appRows = [
+    [
+      "store",
+      "Store",
+      "Store",
+      "Install and remove desktop apps from the TaraGames dock.",
+      "System",
+    ],
     [
       "gopost",
       "GOpost!",
@@ -95,7 +99,16 @@ export async function seed() {
   const install = db.prepare(
     "INSERT INTO installed_apps (user_id, app_id) VALUES (?, ?)",
   );
-  for (const app of ["gopost", "settings", "minecraft", "messenger", "browser"])
+  for (const app of [
+    "store",
+    "gopost",
+    "settings",
+    "minecraft",
+    "messenger",
+    "browser",
+    "notes",
+    "paint",
+  ])
     install.run(1, app);
 
   db.prepare("INSERT INTO user_settings VALUES (?, ?, ?, ?, ?, ?)").run(
@@ -121,6 +134,22 @@ export async function seed() {
     1,
     0,
     0,
+  );
+
+  db.prepare("INSERT INTO desktop_state VALUES (?, ?, ?, ?)").run(
+    1,
+    JSON.stringify([
+      "gopost",
+      "browser",
+      "store",
+      "settings",
+      "minecraft",
+      "messenger",
+      "notes",
+      "paint",
+    ]),
+    JSON.stringify(["gopost", "store"]),
+    "dev-bright",
   );
 
   const posts = [
@@ -195,6 +224,34 @@ export async function seed() {
   );
   for (const post of posts) insertPost.run(...post);
 
+  db.prepare(
+    "INSERT INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(2, 1);
+  db.prepare(
+    "INSERT INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(3, 1);
+  db.prepare(
+    "INSERT INTO follows (follower_id, followee_id) VALUES (?, ?)",
+  ).run(1, 2);
+
+  db.prepare(
+    "INSERT INTO notes (user_id, title, body, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+  ).run(
+    1,
+    "Welcome Note",
+    "# Welcome to Notes Mini\n\n- Draft ideas\n- Save markdown\n- Track TaraGames polish",
+  );
+
+  db.prepare(
+    "INSERT INTO paint_drawings (user_id, name, width, height, pixels, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+  ).run(
+    1,
+    "Starter Canvas",
+    16,
+    16,
+    JSON.stringify(Array.from({ length: 256 }, () => "transparent")),
+  );
+
   db.prepare("INSERT INTO conversations (title, type) VALUES (?, ?)").run(
     "GOpost Friends",
     "group",
@@ -221,9 +278,10 @@ export function resetForTests() {
     DELETE FROM browser_history; DELETE FROM browser_bookmarks; DELETE FROM browser_settings;
     DELETE FROM notifications;
     DELETE FROM messages; DELETE FROM conversation_members; DELETE FROM conversations;
+    DELETE FROM notes; DELETE FROM paint_drawings;
     DELETE FROM desktop_state; DELETE FROM minecraft_worlds;
     DELETE FROM user_settings; DELETE FROM installed_apps;
-    DELETE FROM apps; DELETE FROM likes; DELETE FROM comments; DELETE FROM posts;
+    DELETE FROM apps; DELETE FROM follows; DELETE FROM likes; DELETE FROM comments; DELETE FROM posts;
     DELETE FROM sessions; DELETE FROM users;
     DELETE FROM sqlite_sequence;
   `);

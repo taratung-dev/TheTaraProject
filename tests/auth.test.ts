@@ -8,6 +8,8 @@ import {
   hash,
   newToken,
   sessionUserId,
+  updateUserPassword,
+  updateUserProfile,
   userById,
   userByUsername,
 } from "../services/auth/src/repo";
@@ -82,5 +84,33 @@ describe("auth service", () => {
     ).run(tokenHash);
 
     expect(sessionUserId(token)).toBeNull();
+  });
+
+  test("profile updates persist display name and avatar color", () => {
+    updateUserProfile(1, { displayName: "Tara Dev", avatarColor: "#8b5cf6" });
+
+    expect(userById(1)).toEqual({
+      id: 1,
+      username: "demo",
+      displayName: "Tara Dev",
+      avatarColor: "#8b5cf6",
+    });
+  });
+
+  test("password updates replace the stored hash", async () => {
+    const original = userByUsername("demo");
+    expect(original).not.toBeNull();
+
+    const passwordHash = await Bun.password.hash("new-secret");
+    updateUserPassword(1, passwordHash);
+
+    const updated = userByUsername("demo");
+    expect(updated).not.toBeNull();
+    expect(await Bun.password.verify("new-secret", updated!.passwordHash)).toBe(
+      true,
+    );
+    expect(await Bun.password.verify("demo123", updated!.passwordHash)).toBe(
+      false,
+    );
   });
 });

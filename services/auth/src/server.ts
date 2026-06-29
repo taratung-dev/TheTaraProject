@@ -1,4 +1,11 @@
-import { body, json, route, servicePort, type Route } from "../../_lib/http";
+import {
+  body,
+  json,
+  requireUser,
+  route,
+  servicePort,
+  type Route,
+} from "../../_lib/http";
 import {
   createSession,
   createUser,
@@ -7,6 +14,8 @@ import {
   newToken,
   seedAuth,
   sessionUserId,
+  updateUserPassword,
+  updateUserProfile,
   userById,
   userByUsername,
 } from "./repo";
@@ -121,6 +130,69 @@ const routes: Route[] = [
       return json({ ok: true }, 200, {
         "Set-Cookie": "session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
       });
+    },
+  ],
+  [
+    "PATCH",
+    /^\/auth\/profile$/,
+    [],
+    async ({ request }) => {
+      const userId = sessionUserId(parseCookie(request).session);
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const input = await body<{
+        displayName?: string;
+        avatarColor?: string;
+        currentPassword?: string;
+        newPassword?: string;
+      }>(request);
+      if (!input) return json({ error: "Invalid request body." }, 400);
+
+      const current = userById(userId!);
+      const account = current ? userByUsername(current.username) : null;
+      if (!current || !account) return json({ error: "User not found." }, 404);
+
+      const wantsProfileUpdate =
+        typeof input.displayName === "string" ||
+        typeof input.avatarColor === "string";
+      const wantsPasswordUpdate =
+        typeof input.newPassword === "string" && input.newPassword.length > 0;
+
+      if (!wantsProfileUpdate && !wantsPasswordUpdate)
+        return json({ error: "No profile changes were provided." }, 400);
+
+      if (wantsProfileUpdate) {
+        const displayName = input.displayName?.trim() ?? current.displayName;
+        const avatarColor = input.avatarColor?.trim() ?? current.avatarColor;
+        const validColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(avatarColor);
+        if (!displayName)
+          return json({ error: "Display name is required." }, 400);
+        if (!validColor)
+          return json({ error: "Avatar color must be a hex color." }, 400);
+        updateUserProfile(userId!, { displayName, avatarColor });
+      }
+
+      if (wantsPasswordUpdate) {
+        if (!input.currentPassword)
+          return json({ error: "Current password is required." }, 400);
+        if ((input.newPassword ?? "").length < 4)
+          return json(
+            { error: "New password must be at least 4 characters long." },
+            400,
+          );
+        const valid = await Bun.password.verify(
+          input.currentPassword,
+          account.passwordHash,
+        );
+        if (!valid)
+          return json({ error: "Current password is incorrect." }, 401);
+        updateUserPassword(
+          userId!,
+          await Bun.password.hash(input.newPassword!),
+        );
+      }
+
+      return json({ user: userById(userId!) });
     },
   ],
 ];

@@ -10,10 +10,12 @@ export type {
   Message,
   MinecraftProfile,
   MinecraftWorld,
+  Note,
   Notification,
+  PaintDrawing,
   Post,
   Profile,
   Session,
   User,
-  UserSettings
+  UserSettings,
 } from "../../../../packages/shared/src";

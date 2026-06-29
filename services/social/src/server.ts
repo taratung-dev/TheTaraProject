@@ -8,12 +8,15 @@ import {
   type Route,
 } from "../../_lib/http";
 import {
+  allUsers,
   commentsForPost,
   db,
+  followUser,
   migrateSocial,
   postRows,
   profile,
   seedSocial,
+  unfollowUser,
 } from "./repo";
 
 await migrateSocial();
@@ -144,13 +147,64 @@ const routes: Route[] = [
   ],
   [
     "GET",
+    /^\/users$/,
+    [],
+    ({ request, userId }) => {
+      const search = new URL(request.url).searchParams
+        .get("q")
+        ?.trim()
+        .toLowerCase();
+      const users = allUsers()
+        .filter((person) =>
+          search
+            ? person.displayName.toLowerCase().includes(search) ||
+              person.username.toLowerCase().includes(search)
+            : true,
+        )
+        .map((person) => profile(person.username, userId))
+        .filter((person): person is NonNullable<ReturnType<typeof profile>> =>
+          Boolean(person),
+        );
+      return json({ users });
+    },
+  ],
+  [
+    "GET",
     /^\/users\/([^/]+)$/,
     ["username"],
-    ({ params }) => {
-      const found = profile(params.username);
+    ({ params, userId }) => {
+      const found = profile(params.username, userId);
       return found
         ? json({ profile: found })
         : json({ error: "Profile not found" }, 404);
+    },
+  ],
+  [
+    "POST",
+    /^\/users\/([^/]+)\/follow$/,
+    ["username"],
+    ({ params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const target = profile(params.username, userId);
+      if (!target) return json({ error: "Profile not found" }, 404);
+      if (target.user.id === userId)
+        return json({ error: "You cannot follow yourself." }, 400);
+      followUser(userId!, target.user.id);
+      return json({ profile: profile(params.username, userId)! });
+    },
+  ],
+  [
+    "DELETE",
+    /^\/users\/([^/]+)\/follow$/,
+    ["username"],
+    ({ params, userId }) => {
+      const unauthorized = requireUser(userId);
+      if (unauthorized) return unauthorized;
+      const target = profile(params.username, userId);
+      if (!target) return json({ error: "Profile not found" }, 404);
+      unfollowUser(userId!, target.user.id);
+      return json({ profile: profile(params.username, userId)! });
     },
   ],
 ];

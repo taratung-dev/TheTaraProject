@@ -1,8 +1,14 @@
-import React, { useCallback, useRef } from "react";
+import {
+  useCallback,
+  useRef,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from "react";
 import type { OpenApp } from "../../lib/desktop-state";
 import { Button, ScrollArea, cn } from "../../lib/ui";
 
-type WindowPosition = { x: number; y: number; width: number };
+type WindowPosition = { x: number; y: number; width: number; height: number };
 
 export function AppWindow({
   app,
@@ -17,17 +23,19 @@ export function AppWindow({
   app: OpenApp;
   title: string;
   active: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   position: WindowPosition | undefined;
   onMove: (pos: WindowPosition) => void;
   onClose: () => void;
   onFocus: () => void;
 }) {
   const dragging = useRef(false);
+  const resizing = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
   const handleTitleBarMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+    (e: ReactMouseEvent<HTMLDivElement>) => {
       if ((e.target as HTMLElement).closest("button")) return;
 
       e.preventDefault();
@@ -43,6 +51,7 @@ export function AppWindow({
       };
 
       const currentWidth = position?.width ?? rect.width;
+      const currentHeight = position?.height ?? rect.height;
 
       const handleMouseMove = (ev: MouseEvent) => {
         if (!dragging.current) return;
@@ -50,6 +59,7 @@ export function AppWindow({
           x: ev.clientX - offset.current.x,
           y: ev.clientY - offset.current.y,
           width: currentWidth,
+          height: currentHeight,
         });
       };
 
@@ -62,11 +72,62 @@ export function AppWindow({
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [onMove, position?.width],
+    [onMove, position?.height, position?.width],
   );
 
-  const positionStyle: React.CSSProperties | undefined = position
-    ? { left: position.x, top: position.y, width: position.width }
+  const handleResizeMouseDown = useCallback(
+    (e: ReactMouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      resizing.current = true;
+
+      const articleEl = e.currentTarget.closest("article");
+      if (!articleEl) return;
+      const rect = articleEl.getBoundingClientRect();
+      resizeStart.current = {
+        x: e.clientX,
+        y: e.clientY,
+        width: position?.width ?? rect.width,
+        height: position?.height ?? rect.height,
+      };
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        if (!resizing.current) return;
+        const width = Math.max(
+          320,
+          resizeStart.current.width + (ev.clientX - resizeStart.current.x),
+        );
+        const height = Math.max(
+          260,
+          resizeStart.current.height + (ev.clientY - resizeStart.current.y),
+        );
+        onMove({
+          x: position?.x ?? rect.left,
+          y: position?.y ?? rect.top,
+          width,
+          height,
+        });
+      };
+
+      const handleMouseUp = () => {
+        resizing.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [onMove, position?.height, position?.width, position?.x, position?.y],
+  );
+
+  const positionStyle: CSSProperties | undefined = position
+    ? {
+        left: position.x,
+        top: position.y,
+        width: position.width,
+        height: position.height,
+      }
     : undefined;
 
   return (
@@ -94,9 +155,17 @@ export function AppWindow({
           x
         </Button>
       </div>
-      <ScrollArea className="max-h-[calc(100vh-11rem)] p-4">
+      <ScrollArea className="h-[calc(100%-2.5rem)] max-h-[calc(100vh-11rem)] p-4">
         {children}
       </ScrollArea>
+      <button
+        type="button"
+        className="absolute bottom-1 right-1 h-5 w-5 cursor-se-resize rounded-full border border-slate-300 bg-white/80 text-[10px] text-slate-500 shadow-sm"
+        onMouseDown={handleResizeMouseDown}
+        aria-label={`Resize ${title}`}
+      >
+        ↘
+      </button>
     </article>
   );
 }

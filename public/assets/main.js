@@ -17336,7 +17336,7 @@ var require_jsx_dev_runtime = __commonJS((exports, module) => {
 });
 
 // apps/web/src/main.tsx
-var import_react13 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
@@ -21994,6 +21994,12 @@ function Input(props) {
     className: cn("w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/25", props.className)
   }, undefined, false, undefined, this);
 }
+function Textarea(props) {
+  return /* @__PURE__ */ jsx_dev_runtime.jsxDEV("textarea", {
+    ...props,
+    className: cn("min-h-24 w-full resize-y rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/25", props.className)
+  }, undefined, false, undefined, this);
+}
 function Badge({
   className,
   ...props
@@ -22173,49 +22179,25 @@ var jsx_dev_runtime3 = __toESM(require_jsx_dev_runtime(), 1);
 var nextToastId = 1;
 var useFeedbackStore = create()((set) => ({
   toasts: [],
-  push: (message) => set((state) => {
-    if (state.toasts.some((toast) => toast.message === message))
-      return state;
-    const next = [{ id: nextToastId++, message }, ...state.toasts].slice(0, 4);
-    return { toasts: next };
-  }),
-  dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) }))
+  push: (message) => set((state) => ({
+    toasts: [...state.toasts, { id: nextToastId++, message }]
+  })),
+  dismiss: (id) => set((state) => ({
+    toasts: state.toasts.filter((toast) => toast.id !== id)
+  }))
 }));
 function reportUiError(error, fallback = "Something went wrong.") {
   useFeedbackStore.getState().push(apiErrorMessage(error, fallback));
 }
-function ErrorNotice({ error, message, className }) {
-  const text = message ?? (error ? apiErrorMessage(error) : "");
-  if (!text)
-    return null;
-  return /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-    className: cn("rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700", className),
-    children: text
-  }, undefined, false, undefined, this);
-}
-function QueryErrorCard({ title, error, onRetry, className }) {
+function ErrorNotice({
+  error,
+  message,
+  className
+}) {
   return /* @__PURE__ */ jsx_dev_runtime3.jsxDEV(Card, {
-    className: cn("grid gap-3 p-4", className),
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("h2", {
-            className: "text-lg font-black text-red-700",
-            children: title
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("p", {
-            className: "mt-1 text-sm leading-6 text-slate-600",
-            children: apiErrorMessage(error)
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      onRetry && /* @__PURE__ */ jsx_dev_runtime3.jsxDEV(Button, {
-        className: "justify-self-start",
-        onClick: onRetry,
-        children: "Try again"
-      }, undefined, false, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
+    className: cn("border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700", className),
+    children: message ?? apiErrorMessage(error, "Something went wrong.")
+  }, undefined, false, undefined, this);
 }
 function ToastItem({ id, message }) {
   const dismiss = useFeedbackStore((state) => state.dismiss);
@@ -22233,6 +22215,7 @@ function ToastItem({ id, message }) {
           children: message
         }, undefined, false, undefined, this),
         /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("button", {
+          type: "button",
           className: "text-red-500 transition hover:text-red-700",
           onClick: () => dismiss(id),
           "aria-label": "Dismiss error",
@@ -22256,9 +22239,80 @@ function FeedbackToasts() {
     }, toast.id, false, undefined, this))
   }, undefined, false, undefined, this);
 }
+function QueryErrorCard({
+  title,
+  error,
+  onRetry,
+  className
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime3.jsxDEV(Card, {
+    className: cn("grid gap-3 p-4", className),
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("h2", {
+            className: "text-xl font-black text-ocean",
+            children: title
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("p", {
+            className: "mt-2 text-sm text-red-700",
+            children: apiErrorMessage(error, "Something went wrong.")
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      onRetry && /* @__PURE__ */ jsx_dev_runtime3.jsxDEV(Button, {
+        type: "button",
+        className: "w-fit",
+        onClick: onRetry,
+        children: "Retry"
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/lib/router.tsx
+var import_react8 = __toESM(require_react(), 1);
+var jsx_dev_runtime4 = __toESM(require_jsx_dev_runtime(), 1);
+var RouterContext = import_react8.createContext(null);
+function getSnapshot() {
+  return {
+    pathname: location.pathname,
+    search: location.search
+  };
+}
+function subscribe(callback) {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+}
+function Router({ children }) {
+  const state = import_react8.useSyncExternalStore(subscribe, getSnapshot);
+  const navigate = import_react8.useCallback((to) => {
+    history.pushState(null, "", to);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }, []);
+  const value = import_react8.useMemo(() => ({ ...state, navigate }), [state, navigate]);
+  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(RouterContext.Provider, {
+    value,
+    children
+  }, undefined, false, undefined, this);
+}
+function useRouter() {
+  const context = import_react8.useContext(RouterContext);
+  if (!context) {
+    return {
+      pathname: location.pathname,
+      search: location.search,
+      navigate: (to) => {
+        history.pushState(null, "", to);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      }
+    };
+  }
+  return context;
+}
 
 // apps/web/src/features/desktop/DesktopShell.tsx
-var import_react12 = __toESM(require_react(), 1);
+var import_react17 = __toESM(require_react(), 1);
 
 // node_modules/zustand/esm/middleware.mjs
 function createJSONStorage(getStorage, options) {
@@ -22459,20 +22513,22 @@ var useDesktopStore = create()(persist((set) => ({
   })),
   setStartOpen: (startOpen) => set({ startOpen }),
   setActiveApp: (activeApp) => set({ activeApp }),
-  setWindowPosition: (app, position) => set((state) => ({ windowPositions: { ...state.windowPositions, [app]: position } })),
+  setWindowPosition: (app, position) => set((state) => ({
+    windowPositions: { ...state.windowPositions, [app]: position }
+  })),
   hydrateOpenedApps: (apps) => set({ openApps: apps })
 }), {
   name: "macos-dev-desktop-state"
 }));
 
 // apps/web/src/features/gopost/GOpostClassic.tsx
-var import_react9 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 
 // apps/web/src/lib/useDebounce.ts
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 function useDebounce(value, delay = 300) {
-  const [debounced, setDebounced] = import_react8.useState(value);
-  import_react8.useEffect(() => {
+  const [debounced, setDebounced] = import_react9.useState(value);
+  import_react9.useEffect(() => {
     const timer = window.setTimeout(() => setDebounced(value), delay);
     return () => window.clearTimeout(timer);
   }, [value, delay]);
@@ -22480,81 +22536,84 @@ function useDebounce(value, delay = 300) {
 }
 
 // apps/web/src/lib/Skeleton.tsx
-var jsx_dev_runtime4 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
 function Skeleton({ className }) {
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
     className: cn("animate-pulse rounded-lg bg-slate-200/70", className)
   }, undefined, false, undefined, this);
 }
-function SkeletonCard({ lines = 3, className }) {
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+function SkeletonCard({
+  lines = 3,
+  className
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
     className: cn("rounded-xl border border-white/60 bg-white/75 p-4 shadow-sm backdrop-blur", className),
     children: [
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "mb-3 h-5 w-2/5"
       }, undefined, false, undefined, this),
-      Array.from({ length: lines }, (_, i) => /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
-        className: cn("mt-2 h-3", i === lines - 1 ? "w-3/5" : "w-full")
-      }, i, false, undefined, this))
+      Array.from({ length: lines }, (_, index2) => /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
+        className: cn("mt-2 h-3", index2 === lines - 1 ? "w-3/5" : "w-full")
+      }, `skeleton-line-${lines}-${index2}`, false, undefined, this))
     ]
   }, undefined, true, undefined, this);
 }
 function SkeletonPost() {
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
     className: "rounded-xl border border-white/60 bg-white/75 p-4 shadow-sm backdrop-blur",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
         className: "flex items-center gap-3",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
             className: "h-10 w-10 rounded-full"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
             className: "flex-1",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
                 className: "h-4 w-28"
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
                 className: "mt-1 h-3 w-40"
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "mt-3 h-3 w-full"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "mt-2 h-3 w-4/5"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "mt-2 h-3 w-3/5"
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
 }
 function SkeletonMessage() {
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
     className: "flex gap-2",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "h-3 w-16"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
         className: "h-3 flex-1"
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
 }
 function SkeletonRow({ className }) {
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(Skeleton, {
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
     className: cn("h-10 w-full rounded-lg", className)
   }, undefined, false, undefined, this);
 }
 
 // apps/web/src/features/gopost/GOpostClassic.tsx
-var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime6 = __toESM(require_jsx_dev_runtime(), 1);
 function initials(user) {
   return user?.displayName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase() ?? "GO";
 }
@@ -22569,23 +22628,34 @@ function postMeta(index2) {
   ];
   return times[index2 % times.length];
 }
+function menuButtonClass(active) {
+  return active ? "gp-menu-button active" : "gp-menu-button";
+}
 function GOpostClassic({
   user,
-  embedded = false
+  embedded = false,
+  onOpenApp
 }) {
-  const [body, setBody] = import_react9.useState("");
-  const [search, setSearch] = import_react9.useState("");
-  const [view, setView] = import_react9.useState("feed");
+  const { navigate } = useRouter();
+  const [body, setBody] = import_react10.useState("");
+  const [search, setSearch] = import_react10.useState("");
+  const [view, setView] = import_react10.useState("feed");
+  const [selectedUsername, setSelectedUsername] = import_react10.useState(user?.username ?? null);
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
+  const activeProfileUsername = view === "profile" ? selectedUsername ?? user?.username ?? null : user?.username ?? null;
   const posts = useQuery({
     queryKey: ["posts", debouncedSearch],
     queryFn: () => api(debouncedSearch ? `/api/search?q=${encodeURIComponent(debouncedSearch)}` : "/api/posts")
   });
   const profile = useQuery({
-    queryKey: ["profile", user?.username],
-    queryFn: () => user ? api(`/api/users/${user.username}`) : Promise.resolve({ profile: null }),
-    enabled: Boolean(user)
+    queryKey: ["profile", activeProfileUsername],
+    queryFn: () => activeProfileUsername ? api(`/api/users/${activeProfileUsername}`) : Promise.resolve({ profile: null }),
+    enabled: Boolean(activeProfileUsername)
+  });
+  const people = useQuery({
+    queryKey: ["people", debouncedSearch],
+    queryFn: () => api(debouncedSearch ? `/api/users?q=${encodeURIComponent(debouncedSearch)}` : "/api/users")
   });
   const create2 = useMutation({
     mutationFn: () => api("/api/posts", {
@@ -22598,49 +22668,81 @@ function GOpostClassic({
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     }
   });
-  const postCount = profile.data?.profile.postCount ?? posts.data?.posts.length ?? 13;
-  const fanCount = profile.data?.profile.fanCount ?? 248;
-  const visiblePosts = import_react9.useMemo(() => {
+  const follow = useMutation({
+    mutationFn: ({
+      username,
+      following
+    }) => api(`/api/users/${username}/follow`, {
+      method: following ? "DELETE" : "POST"
+    }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile", variables.username]
+      });
+      queryClient.invalidateQueries({ queryKey: ["people"] });
+    }
+  });
+  const shownProfile = profile.data?.profile ?? null;
+  const sidebarUser = shownProfile?.user ?? user;
+  const postCount = shownProfile?.postCount ?? posts.data?.posts.length ?? 13;
+  const fanCount = shownProfile?.fanCount ?? 0;
+  const followingCount = shownProfile?.followingCount ?? 0;
+  const visiblePosts = import_react10.useMemo(() => {
     const all = posts.data?.posts ?? [];
-    if (view === "profile" && user)
-      return all.filter((p) => p.author.username === user.username);
+    if (view === "profile" && activeProfileUsername) {
+      return all.filter((p) => p.author.username === activeProfileUsername);
+    }
     if (view === "photos")
       return all.filter((p) => p.imageStyle);
     return all;
-  }, [posts.data, view, user]);
-  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+  }, [activeProfileUsername, posts.data, view]);
+  const openDesktopApp = (app) => {
+    if (onOpenApp)
+      onOpenApp(app);
+    else
+      navigate("/");
+  };
+  return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
     className: embedded ? "gp-page gp-embedded" : "gp-page",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("header", {
+      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("header", {
         className: "gp-topbar",
-        children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+        children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
           className: "gp-topbar-inner",
           children: [
-            /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+            /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
               className: "gp-logo",
               children: "GOpost!"
             }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("input", {
+            /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("input", {
               className: "gp-search",
               type: "search",
               value: search,
               onChange: (event) => setSearch(event.target.value),
-              placeholder: "Search GOpost!"
+              placeholder: view === "people" ? "Search people" : "Search GOpost!"
             }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("nav", {
+            /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("nav", {
               className: "gp-nav",
               "aria-label": "Main navigation",
               children: [
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                  type: "button",
+                  onClick: () => setView("feed"),
                   children: "Home"
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                  type: "button",
+                  onClick: () => setView("people"),
                   children: "People"
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                  type: "button",
+                  onClick: () => openDesktopApp("messenger"),
                   children: "Messages"
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                  type: "button",
+                  onClick: () => openDesktopApp("settings"),
                   children: "Settings"
                 }, undefined, false, undefined, this)
               ]
@@ -22648,101 +22750,129 @@ function GOpostClassic({
           ]
         }, undefined, true, undefined, this)
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("main", {
+      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("main", {
         className: "gp-layout",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("aside", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("aside", {
             className: "gp-left-col",
-            children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("section", {
+            children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("section", {
               className: "gp-panel gp-profile",
               children: [
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                   className: "gp-avatar gp-big",
                   style: {
-                    background: user?.avatarColor ?? "linear-gradient(135deg, #ffd166, #f25f8c)"
+                    background: sidebarUser?.avatarColor ?? "linear-gradient(135deg, #ffd166, #f25f8c)"
                   },
-                  children: initials(user)
+                  children: initials(sidebarUser)
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("h1", {
-                  children: "GOpost!"
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("h1", {
+                  children: shownProfile?.user.displayName ?? "GOpost!"
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("p", {
-                  children: user ? `Signed in as ${user.displayName}` : "Share quick updates, big moods, and tiny internet treasures."
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("p", {
+                  children: shownProfile ? `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.` : user ? `Signed in as ${user.displayName}` : "Share quick updates, big moods, and tiny internet treasures."
                 }, undefined, false, undefined, this),
-                profile.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+                profile.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
                   error: profile.error,
                   message: "Profile details are temporarily unavailable.",
                   className: "mt-3"
                 }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                   className: "gp-stat-grid",
                   children: [
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                       className: "gp-stat",
                       children: [
-                        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                        /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                           children: postCount
                         }, undefined, false, undefined, this),
                         "Posts"
                       ]
                     }, undefined, true, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                       className: "gp-stat",
                       children: [
-                        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                        /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                           children: fanCount
                         }, undefined, false, undefined, this),
                         "Fans"
                       ]
                     }, undefined, true, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                       className: "gp-stat",
                       children: [
-                        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
-                          children: "17"
+                        /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
+                          children: followingCount
                         }, undefined, false, undefined, this),
-                        "Clubs"
+                        "Following"
                       ]
                     }, undefined, true, undefined, this)
                   ]
                 }, undefined, true, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                shownProfile && !shownProfile.isMe && user && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                  type: "button",
+                  className: "gp-post-button mt-3",
+                  onClick: () => follow.mutate({
+                    username: shownProfile.user.username,
+                    following: shownProfile.isFollowing
+                  }),
+                  disabled: follow.isPending,
+                  children: follow.isPending ? "Saving..." : shownProfile.isFollowing ? "Following" : "Follow"
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                   className: "gp-menu",
                   children: [
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
                       type: "button",
+                      className: menuButtonClass(view === "feed"),
                       onClick: () => {
                         setView("feed");
                         setSearch("");
                       },
                       children: "News Feed"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
                       type: "button",
-                      onClick: () => setView("profile"),
+                      className: menuButtonClass(view === "profile"),
+                      onClick: () => {
+                        setSelectedUsername(user?.username ?? null);
+                        setView("profile");
+                      },
                       children: "My Profile"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
                       type: "button",
+                      className: menuButtonClass(view === "photos"),
                       onClick: () => setView("photos"),
                       children: "Photo Wall"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                      children: "Games & Apps"
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                      type: "button",
+                      className: menuButtonClass(view === "people"),
+                      onClick: () => setView("people"),
+                      children: "People Finder"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                      children: "Top Friends"
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                      type: "button",
+                      className: "gp-menu-button",
+                      onClick: () => openDesktopApp("messenger"),
+                      children: "Messages"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                      type: "button",
+                      className: "gp-menu-button",
+                      onClick: () => openDesktopApp("settings"),
+                      children: "Account Settings"
                     }, undefined, false, undefined, this)
                   ]
                 }, undefined, true, undefined, this)
               ]
             }, undefined, true, undefined, this)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("section", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("section", {
             className: "gp-center-col",
             "aria-label": "GOpost feed",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("form", {
+              view !== "people" && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("form", {
                 className: "gp-composer",
                 onSubmit: (event) => {
                   event.preventDefault();
@@ -22750,40 +22880,40 @@ function GOpostClassic({
                     create2.mutate();
                 },
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                     className: "gp-composer-title",
-                    children: "Create a GOpost"
+                    children: view === "profile" ? "Post to your profile" : "Create a GOpost"
                   }, undefined, false, undefined, this),
-                  user ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("textarea", {
+                  user ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("textarea", {
                     value: body,
                     onChange: (event) => setBody(event.target.value),
                     placeholder: "What's happening today?"
-                  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                     className: "gp-readonly",
                     children: "Login from macOS Dev to create posts, comment, and like."
                   }, undefined, false, undefined, this),
-                  create2.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+                  create2.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
                     error: create2.error,
                     className: "mt-3"
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                     className: "gp-composer-actions",
                     children: [
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                         className: "gp-tool-row",
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "Photo"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "Mood"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "Sticker"
                           }, undefined, false, undefined, this)
                         ]
                       }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
                         className: "gp-post-button",
                         type: "submit",
                         disabled: !user || !body.trim() || create2.isPending,
@@ -22793,86 +22923,210 @@ function GOpostClassic({
                   }, undefined, true, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+              view === "people" ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("section", {
+                className: "gp-panel",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("h2", {
+                    children: "People Finder"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                    className: "gp-feed",
+                    children: [
+                      people.isLoading && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(jsx_dev_runtime6.Fragment, {
+                        children: [
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this)
+                        ]
+                      }, undefined, true, undefined, this),
+                      people.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(QueryErrorCard, {
+                        title: "People failed to load",
+                        error: people.error,
+                        onRetry: () => void people.refetch()
+                      }, undefined, false, undefined, this),
+                      people.data?.users.map((person) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("article", {
+                        className: "gp-post",
+                        children: [
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                            className: "gp-post-head",
+                            children: [
+                              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                                className: "gp-avatar",
+                                style: { background: person.user.avatarColor },
+                                children: initials(person.user)
+                              }, undefined, false, undefined, this),
+                              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                                children: [
+                                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                                    className: "gp-name",
+                                    children: person.user.displayName
+                                  }, undefined, false, undefined, this),
+                                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                                    className: "gp-meta",
+                                    children: [
+                                      "@",
+                                      person.user.username
+                                    ]
+                                  }, undefined, true, undefined, this)
+                                ]
+                              }, undefined, true, undefined, this)
+                            ]
+                          }, undefined, true, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("p", {
+                            children: [
+                              person.postCount,
+                              " posts · ",
+                              person.fanCount,
+                              " fans ·",
+                              " ",
+                              person.followingCount,
+                              " following"
+                            ]
+                          }, undefined, true, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+                            className: "gp-post-actions",
+                            children: [
+                              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                                type: "button",
+                                onClick: () => {
+                                  setSelectedUsername(person.user.username);
+                                  setView("profile");
+                                },
+                                children: "View Profile"
+                              }, undefined, false, undefined, this),
+                              !person.isMe && user && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                                type: "button",
+                                disabled: follow.isPending,
+                                onClick: () => follow.mutate({
+                                  username: person.user.username,
+                                  following: person.isFollowing
+                                }),
+                                children: person.isFollowing ? "Following" : "Follow"
+                              }, undefined, false, undefined, this)
+                            ]
+                          }, undefined, true, undefined, this)
+                        ]
+                      }, person.user.id, true, undefined, this))
+                    ]
+                  }, undefined, true, undefined, this)
+                ]
+              }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                 className: "gp-feed",
                 children: [
-                  posts.isLoading && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(jsx_dev_runtime5.Fragment, {
+                  posts.isLoading && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(jsx_dev_runtime6.Fragment, {
                     children: [
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this)
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(SkeletonPost, {}, undefined, false, undefined, this)
                     ]
                   }, undefined, true, undefined, this),
-                  posts.isError && !posts.data?.posts.length && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(QueryErrorCard, {
+                  posts.isError && !posts.data?.posts.length && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(QueryErrorCard, {
                     title: "GOpost feed failed to load",
                     error: posts.error,
                     onRetry: () => void posts.refetch()
                   }, undefined, false, undefined, this),
-                  posts.isError && posts.data?.posts.length ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+                  posts.isError && posts.data?.posts.length ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
                     error: posts.error,
                     className: "mb-3"
                   }, undefined, false, undefined, this) : null,
-                  posts.data?.posts.length === 0 && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                  posts.data?.posts.length === 0 && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                     className: "gp-post",
                     children: "No posts found."
                   }, undefined, false, undefined, this),
-                  visiblePosts.map((post, index2) => /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ClassicPost, {
+                  visiblePosts.map((post, index2) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ClassicPost, {
                     post,
                     canWrite: Boolean(user),
-                    index: index2
+                    index: index2,
+                    onViewProfile: (username) => {
+                      setSelectedUsername(username);
+                      setView("profile");
+                    }
                   }, post.id, false, undefined, this))
                 ]
               }, undefined, true, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("aside", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("aside", {
             className: "gp-right-col",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("section", {
+              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("section", {
                 className: "gp-panel",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("h2", {
-                    children: "Trending 2017"
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("h2", {
+                    children: view === "people" ? "People Tips" : "Trending 2017"
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("ul", {
+                  view === "people" ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("ul", {
                     className: "gp-trend-list",
                     children: [
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
+                            children: "Search by name"
+                          }, undefined, false, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+                            children: "Find GOpost friends fast"
+                          }, undefined, false, undefined, this)
+                        ]
+                      }, undefined, true, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                        children: [
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
+                            children: "Follow fans"
+                          }, undefined, false, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+                            children: "Keep tabs on favorite profiles"
+                          }, undefined, false, undefined, this)
+                        ]
+                      }, undefined, true, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                        children: [
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
+                            children: "Open Messenger"
+                          }, undefined, false, undefined, this),
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+                            children: "Jump straight into chats"
+                          }, undefined, false, undefined, this)
+                        ]
+                      }, undefined, true, undefined, this)
+                    ]
+                  }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("ul", {
+                    className: "gp-trend-list",
+                    children: [
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                        children: [
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                             children: "#ProfileSong"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "1,204 posts"
                           }, undefined, false, undefined, this)
                         ]
                       }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                             children: "#StickerMood"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "842 posts"
                           }, undefined, false, undefined, this)
                         ]
                       }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                             children: "#PhotoWall"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "511 posts"
                           }, undefined, false, undefined, this)
                         ]
                       }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
                             children: "#LunchPoll"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+                          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
                             children: "306 posts"
                           }, undefined, false, undefined, this)
                         ]
@@ -22881,55 +23135,37 @@ function GOpostClassic({
                   }, undefined, true, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("section", {
+              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("section", {
                 className: "gp-panel gp-friends-panel",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("h2", {
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("h2", {
                     children: "Online Friends"
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("ul", {
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("ul", {
                     className: "gp-friend-list",
-                    children: [
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
-                        children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                            className: "gp-mini"
-                          }, undefined, false, undefined, this),
-                          "Alya Star"
-                        ]
-                      }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
-                        children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                            className: "gp-mini"
-                          }, undefined, false, undefined, this),
-                          "Joko Byte"
-                        ]
-                      }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
-                        children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                            className: "gp-mini"
-                          }, undefined, false, undefined, this),
-                          "Nina Orbit"
-                        ]
-                      }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("li", {
-                        children: [
-                          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
-                            className: "gp-mini"
-                          }, undefined, false, undefined, this),
-                          "Tara Games"
-                        ]
-                      }, undefined, true, undefined, this)
-                    ]
-                  }, undefined, true, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+                    children: (people.data?.users ?? []).slice(0, 4).map((friend) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                      children: [
+                        /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+                          className: "gp-mini"
+                        }, undefined, false, undefined, this),
+                        /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                          type: "button",
+                          className: "gp-inline-link",
+                          onClick: () => {
+                            setSelectedUsername(friend.user.username);
+                            setView("profile");
+                          },
+                          children: friend.user.displayName
+                        }, undefined, false, undefined, this)
+                      ]
+                    }, friend.user.id, true, undefined, this))
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                     className: "gp-ad",
                     children: [
                       "GOpost! Classic",
-                      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("br", {}, undefined, false, undefined, this),
-                      "Now with more shine."
+                      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("br", {}, undefined, false, undefined, this),
+                      "Now with real profile follows."
                     ]
                   }, undefined, true, undefined, this)
                 ]
@@ -22938,7 +23174,7 @@ function GOpostClassic({
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      !embedded && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("footer", {
+      !embedded && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("footer", {
         className: "gp-footer",
         children: "(c) 2017 GOpost! | Built for desktop, still works on mobile."
       }, undefined, false, undefined, this)
@@ -22948,11 +23184,12 @@ function GOpostClassic({
 function ClassicPost({
   post,
   canWrite,
-  index: index2
+  index: index2,
+  onViewProfile
 }) {
-  const [comment, setComment] = import_react9.useState("");
-  const [editing, setEditing] = import_react9.useState(false);
-  const [draft, setDraft] = import_react9.useState(post.body);
+  const [comment, setComment] = import_react10.useState("");
+  const [editing, setEditing] = import_react10.useState(false);
+  const [draft, setDraft] = import_react10.useState(post.body);
   const queryClient = useQueryClient();
   const comments = useQuery({
     queryKey: ["comments", post.id],
@@ -22987,24 +23224,26 @@ function ClassicPost({
     mutationFn: () => api(`/api/posts/${post.id}`, { method: "DELETE" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts"] })
   });
-  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("article", {
+  return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("article", {
     className: "gp-post",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-post-head",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
             className: "gp-avatar",
             style: { background: post.author.avatarColor },
             children: initials(post.author)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
             children: [
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
-                className: "gp-name",
+              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                type: "button",
+                className: "gp-inline-link gp-name-button",
+                onClick: () => onViewProfile(post.author.username),
                 children: post.author.displayName
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+              /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
                 className: "gp-meta",
                 children: postMeta(index2)
               }, undefined, false, undefined, this)
@@ -23012,14 +23251,14 @@ function ClassicPost({
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      editing ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      editing ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-edit-box",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("textarea", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("textarea", {
             value: draft,
             onChange: (event) => setDraft(event.target.value)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
             className: "gp-post-button",
             type: "button",
             onClick: () => save.mutate(),
@@ -23027,53 +23266,53 @@ function ClassicPost({
             children: save.isPending ? "Saving..." : "Save"
           }, undefined, false, undefined, this)
         ]
-      }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("p", {
+      }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("p", {
         children: post.body
       }, undefined, false, undefined, this),
-      save.isError && editing && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+      save.isError && editing && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
         error: save.error,
         className: "mt-2"
       }, undefined, false, undefined, this),
-      post.imageStyle && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      post.imageStyle && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-photo",
         style: { "--accent": post.imageStyle },
         children: "PHOTO DROP"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-post-actions",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
             type: "button",
             disabled: !canWrite || like.isPending,
             onClick: () => like.mutate(),
             children: post.likedByMe ? "Liked" : "Like"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
             children: "Comment"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
             children: "Share"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
             className: "gp-tag",
             children: [
               post.likeCount,
               " likes"
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("span", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
             className: "gp-tag",
             children: [
               post.commentCount,
               " comments"
             ]
           }, undefined, true, undefined, this),
-          post.canEdit && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          post.canEdit && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
             type: "button",
             onClick: () => setEditing(!editing),
             children: "Edit"
           }, undefined, false, undefined, this),
-          post.canEdit && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          post.canEdit && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
             type: "button",
             onClick: () => remove.mutate(),
             disabled: remove.isPending,
@@ -23081,34 +23320,34 @@ function ClassicPost({
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      like.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+      like.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
         error: like.error,
         className: "mt-2"
       }, undefined, false, undefined, this),
-      remove.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+      remove.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
         error: remove.error,
         className: "mt-2"
       }, undefined, false, undefined, this),
-      comments.isLoading && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      comments.isLoading && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-comments",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(Skeleton, {
             className: "h-3 w-full"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Skeleton, {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(Skeleton, {
             className: "mt-1 h-3 w-4/5"
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      comments.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+      comments.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
         error: comments.error,
         className: "mt-2"
       }, undefined, false, undefined, this),
-      comments.data?.comments.length ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      comments.data?.comments.length ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-comments",
-        children: comments.data.comments.map((item) => /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+        children: comments.data.comments.map((item) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
           children: [
-            /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("b", {
+            /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("b", {
               children: [
                 item.author.displayName,
                 ":"
@@ -23119,15 +23358,15 @@ function ClassicPost({
           ]
         }, item.id, true, undefined, this))
       }, undefined, false, undefined, this) : null,
-      canWrite && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      canWrite && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
         className: "gp-comment-box",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("input", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("input", {
             value: comment,
             onChange: (event) => setComment(event.target.value),
             placeholder: "Write a comment..."
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
             type: "button",
             onClick: () => comment.trim() && addComment.mutate(),
             disabled: !comment.trim() || addComment.isPending,
@@ -23135,7 +23374,7 @@ function ClassicPost({
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      addComment.isError && /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ErrorNotice, {
+      addComment.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
         error: addComment.error,
         className: "mt-2"
       }, undefined, false, undefined, this)
@@ -23144,16 +23383,20 @@ function ClassicPost({
 }
 
 // apps/web/src/features/gopost/GOpostApp.tsx
-var jsx_dev_runtime6 = __toESM(require_jsx_dev_runtime(), 1);
-function GOpostApp({ user }) {
-  return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(GOpostClassic, {
+var jsx_dev_runtime7 = __toESM(require_jsx_dev_runtime(), 1);
+function GOpostApp({
+  user,
+  openApp
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(GOpostClassic, {
     user,
-    embedded: true
+    embedded: true,
+    onOpenApp: openApp
   }, undefined, false, undefined, this);
 }
 
 // apps/web/src/features/store/StoreApp.tsx
-var jsx_dev_runtime7 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime8 = __toESM(require_jsx_dev_runtime(), 1);
 function StoreApp({ onOpen }) {
   const queryClient = useQueryClient();
   const apps = useQuery({
@@ -23176,82 +23419,82 @@ function StoreApp({ onOpen }) {
     }
   });
   if (apps.isError) {
-    return /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(QueryErrorCard, {
+    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(QueryErrorCard, {
       title: "Store failed to load",
       error: apps.error,
       onRetry: () => void apps.refetch(),
       className: "p-4"
     }, undefined, false, undefined, this);
   }
-  return /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
     children: [
-      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("h2", {
+      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("h2", {
         className: "text-2xl font-black text-ocean",
         children: "Dev Store"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("p", {
+      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("p", {
         className: "mt-1 text-sm text-slate-600",
         children: "Install apps into the dock and desktop. Store state is owned by the Platform service."
       }, undefined, false, undefined, this),
-      (install.isError || uninstall.isError) && /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(ErrorNotice, {
+      (install.isError || uninstall.isError) && /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(ErrorNotice, {
         error: install.error ?? uninstall.error,
         className: "mt-4"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
         className: "mt-4 grid gap-3 sm:grid-cols-2",
         children: [
-          apps.isLoading && /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(jsx_dev_runtime7.Fragment, {
+          apps.isLoading && /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
             children: [
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(SkeletonCard, {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SkeletonCard, {
                 lines: 2
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(SkeletonCard, {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SkeletonCard, {
                 lines: 2
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(SkeletonCard, {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SkeletonCard, {
                 lines: 2
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(SkeletonCard, {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SkeletonCard, {
                 lines: 2
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          apps.data?.apps.map((app) => /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(Card, {
+          apps.data?.apps.map((app) => /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Card, {
             className: "grid gap-2 p-4",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
                 className: "flex items-center justify-between gap-2",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("b", {
+                  /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("b", {
                     className: "text-ocean",
                     children: app.name
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(Badge, {
+                  /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Badge, {
                     children: app.category
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("p", {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("p", {
                 className: "text-sm leading-5 text-slate-600",
                 children: app.description
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
+              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
                 className: "flex gap-2 justify-self-start",
-                children: app.installed ? /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(jsx_dev_runtime7.Fragment, {
+                children: app.installed ? /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
                   children: [
-                    /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(Button, {
+                    /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Button, {
                       variant: "soft",
                       onClick: () => onOpen(app.id),
                       children: "Open"
                     }, undefined, false, undefined, this),
-                    app.id !== "store" && /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(Button, {
+                    app.id !== "store" && /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Button, {
                       variant: "danger",
                       onClick: () => uninstall.mutate(app.id),
                       disabled: uninstall.isPending && uninstall.variables === app.id,
                       children: uninstall.isPending && uninstall.variables === app.id ? "Removing..." : "Uninstall"
                     }, undefined, false, undefined, this)
                   ]
-                }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(Button, {
+                }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Button, {
                   variant: "primary",
                   onClick: () => install.mutate(app.id),
                   disabled: install.isPending && install.variables === app.id,
@@ -23267,9 +23510,26 @@ function StoreApp({ onOpen }) {
 }
 
 // apps/web/src/features/settings/SettingsApp.tsx
-var jsx_dev_runtime8 = __toESM(require_jsx_dev_runtime(), 1);
-function SettingsApp() {
+var import_react11 = __toESM(require_react(), 1);
+var jsx_dev_runtime9 = __toESM(require_jsx_dev_runtime(), 1);
+var avatarColors = [
+  "#2f80ed",
+  "#f25f8c",
+  "#27ae60",
+  "#f2994a",
+  "#8b5cf6",
+  "#0ea5e9"
+];
+function SettingsApp({ user }) {
   const queryClient = useQueryClient();
+  const [displayName, setDisplayName] = import_react11.useState(user.displayName);
+  const [avatarColor, setAvatarColor] = import_react11.useState(user.avatarColor);
+  const [currentPassword, setCurrentPassword] = import_react11.useState("");
+  const [newPassword, setNewPassword] = import_react11.useState("");
+  import_react11.useEffect(() => {
+    setDisplayName(user.displayName);
+    setAvatarColor(user.avatarColor);
+  }, [user.avatarColor, user.displayName]);
   const settings = useQuery({
     queryKey: ["settings"],
     queryFn: () => api("/api/settings")
@@ -23281,8 +23541,30 @@ function SettingsApp() {
     }),
     onSuccess: (data) => queryClient.setQueryData(["settings"], data)
   });
+  const saveProfile = useMutation({
+    mutationFn: () => api("/api/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify({ displayName, avatarColor })
+    }),
+    onSuccess: ({ user: nextUser }) => {
+      queryClient.setQueryData(["session"], { user: nextUser });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    }
+  });
+  const changePassword = useMutation({
+    mutationFn: () => api("/api/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify({ currentPassword, newPassword })
+    }),
+    onSuccess: ({ user: nextUser }) => {
+      queryClient.setQueryData(["session"], { user: nextUser });
+      setCurrentPassword("");
+      setNewPassword("");
+    }
+  });
   if (settings.isError) {
-    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(QueryErrorCard, {
+    return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(QueryErrorCard, {
       title: "Settings failed to load",
       error: settings.error,
       onRetry: () => void settings.refetch(),
@@ -23291,67 +23573,182 @@ function SettingsApp() {
   }
   const current = settings.data?.settings;
   if (!current)
-    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SkeletonCard, {
+    return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonCard, {
       lines: 4,
       className: "p-4"
     }, undefined, false, undefined, this);
-  return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+    className: "grid gap-4 xl:grid-cols-[1.1fr_0.9fr]",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("h2", {
-        className: "text-2xl font-black text-ocean",
-        children: "System Settings"
-      }, undefined, false, undefined, this),
-      patch.isError && /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(ErrorNotice, {
-        error: patch.error,
-        className: "mt-4"
-      }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
-        className: "mt-4 grid gap-3",
+      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
         children: [
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Setting, {
-            label: "Glass Dock",
-            on: current.dockStyle === "glass",
-            onClick: () => patch.mutate({
-              dockStyle: current.dockStyle === "glass" ? "solid" : "glass"
-            })
+          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("h2", {
+            className: "text-2xl font-black text-ocean",
+            children: "System Settings"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Setting, {
-            label: "Notifications",
-            on: current.notifications,
-            onClick: () => patch.mutate({ notifications: !current.notifications })
+          patch.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
+            error: patch.error,
+            className: "mt-4"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Setting, {
-            label: "Classic Sounds",
-            on: current.classicSounds,
-            onClick: () => patch.mutate({ classicSounds: !current.classicSounds })
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Setting, {
-            label: "Dark Mode",
-            on: current.darkMode,
-            onClick: () => patch.mutate({ darkMode: !current.darkMode })
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Card, {
-            className: "p-3",
+          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+            className: "mt-4 grid gap-3",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
-                className: "font-bold",
-                children: "Wallpaper"
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Setting, {
+                label: "Glass Dock",
+                on: current.dockStyle === "glass",
+                onClick: () => patch.mutate({
+                  dockStyle: current.dockStyle === "glass" ? "solid" : "glass"
+                })
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
-                className: "mt-2 flex gap-2",
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Setting, {
+                label: "Notifications",
+                on: current.notifications,
+                onClick: () => patch.mutate({ notifications: !current.notifications })
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Setting, {
+                label: "Classic Sounds",
+                on: current.classicSounds,
+                onClick: () => patch.mutate({ classicSounds: !current.classicSounds })
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Setting, {
+                label: "Dark Mode",
+                on: current.darkMode,
+                onClick: () => patch.mutate({ darkMode: !current.darkMode })
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
+                className: "p-3",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Button, {
-                    variant: current.wallpaper === "dev-bright" ? "primary" : "soft",
-                    onClick: () => patch.mutate({ wallpaper: "dev-bright" }),
-                    children: "Bright"
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                    className: "font-bold",
+                    children: "Wallpaper"
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Button, {
-                    variant: current.wallpaper === "sunset" ? "primary" : "soft",
-                    onClick: () => patch.mutate({ wallpaper: "sunset" }),
-                    children: "Sunset"
-                  }, undefined, false, undefined, this)
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                    className: "mt-2 flex gap-2",
+                    children: [
+                      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+                        type: "button",
+                        variant: current.wallpaper === "dev-bright" ? "primary" : "soft",
+                        onClick: () => patch.mutate({ wallpaper: "dev-bright" }),
+                        children: "Bright"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+                        type: "button",
+                        variant: current.wallpaper === "sunset" ? "primary" : "soft",
+                        onClick: () => patch.mutate({ wallpaper: "sunset" }),
+                        children: "Sunset"
+                      }, undefined, false, undefined, this)
+                    ]
+                  }, undefined, true, undefined, this)
                 ]
               }, undefined, true, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+        className: "grid gap-4",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
+            className: "grid gap-4 p-4",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("h3", {
+                    className: "text-lg font-black text-ocean",
+                    children: "Profile"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("p", {
+                    className: "text-sm text-slate-600",
+                    children: "Update your GOpost identity and desktop avatar color."
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("label", {
+                htmlFor: "settings-display-name",
+                className: "grid gap-1 text-sm font-bold",
+                children: "Display Name"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Input, {
+                id: "settings-display-name",
+                value: displayName,
+                onChange: (event) => setDisplayName(event.target.value)
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                className: "grid gap-2",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("span", {
+                    className: "text-sm font-bold",
+                    children: "Avatar Color"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                    className: "flex flex-wrap gap-2",
+                    children: avatarColors.map((color) => /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("button", {
+                      type: "button",
+                      className: `h-9 w-9 rounded-full border-2 ${avatarColor === color ? "border-ocean" : "border-slate-200"}`,
+                      style: { background: color },
+                      onClick: () => setAvatarColor(color),
+                      "aria-label": `Choose ${color}`
+                    }, color, false, undefined, this))
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              saveProfile.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
+                error: saveProfile.error
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+                type: "button",
+                onClick: () => saveProfile.mutate(),
+                disabled: saveProfile.isPending,
+                children: saveProfile.isPending ? "Saving..." : "Save Profile"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
+            className: "grid gap-4 p-4",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("h3", {
+                    className: "text-lg font-black text-ocean",
+                    children: "Password"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("p", {
+                    className: "text-sm text-slate-600",
+                    children: "Use your current password to set a new one."
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("label", {
+                htmlFor: "settings-current-password",
+                className: "grid gap-1 text-sm font-bold",
+                children: "Current Password"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Input, {
+                id: "settings-current-password",
+                type: "password",
+                value: currentPassword,
+                onChange: (event) => setCurrentPassword(event.target.value)
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("label", {
+                htmlFor: "settings-new-password",
+                className: "grid gap-1 text-sm font-bold",
+                children: "New Password"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Input, {
+                id: "settings-new-password",
+                type: "password",
+                value: newPassword,
+                onChange: (event) => setNewPassword(event.target.value)
+              }, undefined, false, undefined, this),
+              changePassword.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
+                error: changePassword.error
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+                type: "button",
+                onClick: () => changePassword.mutate(),
+                disabled: !currentPassword || !newPassword || changePassword.isPending,
+                children: changePassword.isPending ? "Updating..." : "Change Password"
+              }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this)
         ]
@@ -23364,29 +23761,30 @@ function Setting({
   on,
   onClick
 }) {
-  return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Card, {
+  return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
     className: "flex items-center justify-between p-3",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("span", {
+      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("span", {
         className: "font-bold",
         children: label
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Switch, {
+      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Switch, {
         checked: on,
-        onClick
+        onClick,
+        "aria-label": label
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
 }
 
 // apps/web/src/features/messenger/MessengerApp.tsx
-var import_react10 = __toESM(require_react(), 1);
-var jsx_dev_runtime9 = __toESM(require_jsx_dev_runtime(), 1);
+var import_react12 = __toESM(require_react(), 1);
+var jsx_dev_runtime10 = __toESM(require_jsx_dev_runtime(), 1);
 function MessengerApp() {
-  const [activeId, setActiveId] = import_react10.useState(null);
-  const [text, setText] = import_react10.useState("");
-  const [creating, setCreating] = import_react10.useState(false);
-  const [newTitle, setNewTitle] = import_react10.useState("");
+  const [activeId, setActiveId] = import_react12.useState(null);
+  const [text, setText] = import_react12.useState("");
+  const [creating, setCreating] = import_react12.useState(false);
+  const [newTitle, setNewTitle] = import_react12.useState("");
   const queryClient = useQueryClient();
   const conversations = useQuery({
     queryKey: ["conversations"],
@@ -23421,30 +23819,30 @@ function MessengerApp() {
     }
   });
   if (conversations.isError) {
-    return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(QueryErrorCard, {
+    return /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(QueryErrorCard, {
       title: "Messenger failed to load",
       error: conversations.error,
       onRetry: () => void conversations.refetch(),
       className: "p-4"
     }, undefined, false, undefined, this);
   }
-  return /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
     className: "grid min-h-[420px] gap-3 md:grid-cols-[180px_1fr]",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
+      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Card, {
         className: "p-3",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("h2", {
+          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("h2", {
             className: "text-lg font-black text-ocean",
             children: "Messenger"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Button, {
             variant: "soft",
             className: "mt-2 w-full text-xs",
             onClick: () => setCreating(!creating),
             children: creating ? "Cancel" : "New Chat"
           }, undefined, false, undefined, this),
-          creating && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("form", {
+          creating && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("form", {
             className: "mt-2 grid gap-2",
             onSubmit: (e) => {
               e.preventDefault();
@@ -23452,46 +23850,46 @@ function MessengerApp() {
                 createConversation.mutate();
             },
             children: [
-              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Input, {
+              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Input, {
                 value: newTitle,
                 onChange: (e) => setNewTitle(e.target.value),
                 placeholder: "Conversation name..."
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Button, {
                 disabled: !newTitle.trim() || createConversation.isPending,
                 children: createConversation.isPending ? "Creating..." : "Create"
               }, undefined, false, undefined, this),
-              createConversation.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
+              createConversation.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(ErrorNotice, {
                 error: createConversation.error
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
             className: "mt-3 grid gap-2",
             children: [
-              conversations.isLoading && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(jsx_dev_runtime9.Fragment, {
+              conversations.isLoading && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(jsx_dev_runtime10.Fragment, {
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonRow, {}, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonRow, {
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {}, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {
                     className: "mt-2"
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonRow, {
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {
                     className: "mt-2"
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              conversations.data?.conversations.map((conversation) => /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+              conversations.data?.conversations.map((conversation) => /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Button, {
                 variant: active === conversation.id ? "primary" : "soft",
                 className: "justify-between",
                 onClick: () => setActiveId(conversation.id),
                 children: [
                   conversation.title,
-                  conversation.unreadCount > 0 && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Badge, {
+                  conversation.unreadCount > 0 && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Badge, {
                     children: conversation.unreadCount
                   }, undefined, false, undefined, this)
                 ]
               }, conversation.id, true, undefined, this)),
-              !conversations.isLoading && !conversations.data?.conversations.length && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("p", {
+              !conversations.isLoading && !conversations.data?.conversations.length && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("p", {
                 className: "text-sm text-slate-600",
                 children: "No conversations yet."
               }, undefined, false, undefined, this)
@@ -23499,33 +23897,33 @@ function MessengerApp() {
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Card, {
+      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Card, {
         className: "grid grid-rows-[1fr_auto] gap-3 p-3",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
             className: "grid content-start gap-2 overflow-auto",
             children: [
-              !active && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("p", {
+              !active && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("p", {
                 className: "text-sm text-slate-600",
                 children: "Pick a conversation to start chatting."
               }, undefined, false, undefined, this),
-              active && messages.isLoading && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+              active && messages.isLoading && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
                 className: "grid gap-2",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this)
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonMessage, {}, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              active && messages.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(QueryErrorCard, {
+              active && messages.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(QueryErrorCard, {
                 title: "Messages failed to load",
                 error: messages.error,
                 onRetry: () => void messages.refetch()
               }, undefined, false, undefined, this),
-              messages.data?.messages.map((message) => /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+              messages.data?.messages.map((message) => /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
                 className: "rounded-lg bg-white/80 px-3 py-2 text-sm",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("b", {
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("b", {
                     className: "text-ocean",
                     children: [
                       message.sender.displayName,
@@ -23538,13 +23936,13 @@ function MessengerApp() {
               }, message.id, true, undefined, this))
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
             className: "grid gap-2",
             children: [
-              send.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
+              send.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(ErrorNotice, {
                 error: send.error
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("form", {
+              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("form", {
                 className: "flex gap-2",
                 onSubmit: (event) => {
                   event.preventDefault();
@@ -23552,12 +23950,12 @@ function MessengerApp() {
                     send.mutate();
                 },
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Input, {
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Input, {
                     value: text,
                     onChange: (event) => setText(event.target.value),
                     placeholder: "Write a message..."
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Button, {
+                  /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Button, {
                     disabled: !active || !text.trim() || send.isPending,
                     children: "Send"
                   }, undefined, false, undefined, this)
@@ -23572,7 +23970,7 @@ function MessengerApp() {
 }
 
 // apps/web/src/features/minecraft/MinecraftApp.tsx
-var jsx_dev_runtime10 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime11 = __toESM(require_jsx_dev_runtime(), 1);
 function MinecraftApp() {
   const profile = useQuery({
     queryKey: ["minecraft-profile"],
@@ -23587,67 +23985,67 @@ function MinecraftApp() {
       method: "POST"
     })
   });
-  return /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
     children: [
-      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("h2", {
+      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("h2", {
         className: "text-2xl font-black text-ocean",
         children: "Minecraft Launcher"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
         className: "mt-3 grid min-h-44 place-items-center rounded-xl border-4 border-[#51351e] bg-blocks text-center text-2xl font-black text-white shadow-inner",
         children: launch.data?.launch.message ?? profile.data?.profile.status ?? "Ready"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
         className: "mt-3 flex items-center gap-2",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Button, {
+          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
             onClick: () => launch.mutate(),
             disabled: launch.isPending,
             children: launch.isPending ? "Launching..." : "Play Demo"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Badge, {
+          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Badge, {
             children: profile.data?.profile.version ?? "Dev 3.4.6"
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
         className: "mt-3 grid gap-2",
         children: [
-          profile.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(ErrorNotice, {
+          profile.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
             error: profile.error,
             message: "Minecraft profile is temporarily unavailable."
           }, undefined, false, undefined, this),
-          launch.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(ErrorNotice, {
+          launch.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
             error: launch.error
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
         className: "mt-4 grid gap-2",
         children: [
-          worlds.isLoading && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(jsx_dev_runtime10.Fragment, {
+          worlds.isLoading && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(jsx_dev_runtime11.Fragment, {
             children: [
-              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {}, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {
+              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {}, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
                 className: "mt-2"
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(SkeletonRow, {
+              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
                 className: "mt-2"
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          worlds.isError && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(QueryErrorCard, {
+          worlds.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(QueryErrorCard, {
             title: "World list failed to load",
             error: worlds.error,
             onRetry: () => void worlds.refetch()
           }, undefined, false, undefined, this),
-          !worlds.isLoading && !worlds.isError && worlds.data?.worlds.map((world) => /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Card, {
+          !worlds.isLoading && !worlds.isError && worlds.data?.worlds.map((world) => /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
             className: "flex items-center justify-between p-3",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("b", {
+              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("b", {
                 children: world.name
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime10.jsxDEV("span", {
+              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("span", {
                 className: "text-sm text-slate-600",
                 children: [
                   world.mode,
@@ -23657,7 +24055,7 @@ function MinecraftApp() {
               }, undefined, true, undefined, this)
             ]
           }, world.id, true, undefined, this)),
-          !worlds.isLoading && !worlds.isError && worlds.data?.worlds.length === 0 && /* @__PURE__ */ jsx_dev_runtime10.jsxDEV(Card, {
+          !worlds.isLoading && !worlds.isError && worlds.data?.worlds.length === 0 && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
             className: "p-4",
             children: "No worlds yet."
           }, undefined, false, undefined, this)
@@ -23668,8 +24066,8 @@ function MinecraftApp() {
 }
 
 // apps/web/src/features/browser/BrowserApp.tsx
-var import_react11 = __toESM(require_react(), 1);
-var jsx_dev_runtime11 = __toESM(require_jsx_dev_runtime(), 1);
+var import_react13 = __toESM(require_react(), 1);
+var jsx_dev_runtime12 = __toESM(require_jsx_dev_runtime(), 1);
 function normalize(input) {
   if (input.startsWith("/"))
     return input;
@@ -23678,12 +24076,12 @@ function normalize(input) {
   return input;
 }
 function BrowserApp({ user }) {
-  const [url, setUrl] = import_react11.useState("/gopost");
-  const [address, setAddress] = import_react11.useState("/gopost");
-  const [backStack, setBackStack] = import_react11.useState([]);
-  const [forwardStack, setForwardStack] = import_react11.useState([]);
+  const [url, setUrl] = import_react13.useState("/gopost");
+  const [address, setAddress] = import_react13.useState("/gopost");
+  const [backStack, setBackStack] = import_react13.useState([]);
+  const [forwardStack, setForwardStack] = import_react13.useState([]);
   const queryClient = useQueryClient();
-  const history = useQuery({
+  const history2 = useQuery({
     queryKey: ["browser-history"],
     queryFn: () => api("/api/browser/history")
   });
@@ -23700,7 +24098,7 @@ function BrowserApp({ user }) {
     queryFn: () => api(`/api/browser/metadata?url=${encodeURIComponent(url)}`),
     enabled: !url.startsWith("/") || url !== "/gopost"
   });
-  const title = import_react11.useMemo(() => url === "/gopost" ? "GOpost! Classic" : metadata.data?.metadata.title ?? url, [metadata.data, url]);
+  const title = import_react13.useMemo(() => url === "/gopost" ? "GOpost! Classic" : metadata.data?.metadata.title ?? url, [metadata.data, url]);
   const visit = useMutation({
     mutationFn: (nextUrl) => api("/api/browser/history", {
       method: "POST",
@@ -23744,70 +24142,70 @@ function BrowserApp({ user }) {
     setForwardStack(rest);
     navigate(next, false);
   }
-  return /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
     className: "grid min-h-[560px] gap-3 lg:grid-cols-[1fr_230px]",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("section", {
+      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("section", {
         className: "grid grid-rows-[auto_1fr] gap-3",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
             className: "grid gap-3",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
+              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
                 className: "grid gap-2 p-3",
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
                     className: "flex flex-wrap items-center gap-2",
                     children: [
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                         variant: "soft",
                         className: "h-9 w-9 p-0",
                         onClick: back,
                         disabled: !backStack.length,
-                        children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ArrowLeft, {
+                        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ArrowLeft, {
                           size: 16
                         }, undefined, false, undefined, this)
                       }, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                         variant: "soft",
                         className: "h-9 w-9 p-0",
                         onClick: forward,
                         disabled: !forwardStack.length,
-                        children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ArrowRight, {
+                        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ArrowRight, {
                           size: 16
                         }, undefined, false, undefined, this)
                       }, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                         variant: "soft",
                         className: "h-9 w-9 p-0",
                         onClick: () => navigate(url, false),
-                        children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(RefreshCcw, {
+                        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(RefreshCcw, {
                           size: 16
                         }, undefined, false, undefined, this)
                       }, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                         variant: "soft",
                         className: "h-9 w-9 p-0",
                         onClick: () => navigate(settings.data?.settings.homepage ?? "/gopost"),
-                        children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(House, {
+                        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(House, {
                           size: 16
                         }, undefined, false, undefined, this)
                       }, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("form", {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("form", {
                         className: "flex min-w-0 flex-1 gap-2",
                         onSubmit: (event) => {
                           event.preventDefault();
                           navigate(address);
                         },
                         children: [
-                          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Input, {
+                          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Input, {
                             value: address,
                             onChange: (event) => setAddress(event.target.value),
                             placeholder: "/gopost or example.com"
                           }, undefined, false, undefined, this),
-                          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                             children: [
-                              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Search, {
+                              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Search, {
                                 size: 16
                               }, undefined, false, undefined, this),
                               "Go"
@@ -23815,55 +24213,55 @@ function BrowserApp({ user }) {
                           }, undefined, true, undefined, this)
                         ]
                       }, undefined, true, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Button, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
                         variant: "soft",
                         className: "h-9 w-9 p-0",
                         onClick: () => bookmark.mutate(),
                         disabled: bookmark.isPending,
-                        children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Bookmark, {
+                        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Bookmark, {
                           size: 16
                         }, undefined, false, undefined, this)
                       }, undefined, false, undefined, this)
                     ]
                   }, undefined, true, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
                     className: "flex items-center gap-2 text-xs font-bold text-slate-500",
                     children: [
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Badge, {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Badge, {
                         children: url.startsWith("/") ? "Internal" : "Internet Preview"
                       }, undefined, false, undefined, this),
-                      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("span", {
+                      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
                         children: title
                       }, undefined, false, undefined, this)
                     ]
                   }, undefined, true, undefined, this)
                 ]
               }, undefined, true, undefined, this),
-              (settings.isError || visit.isError || bookmark.isError) && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+              (settings.isError || visit.isError || bookmark.isError) && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
                 className: "grid gap-2",
                 children: [
-                  settings.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
+                  settings.isError && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
                     error: settings.error,
                     message: "Browser settings are temporarily unavailable. Using the default homepage."
                   }, undefined, false, undefined, this),
-                  visit.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
+                  visit.isError && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
                     error: visit.error
                   }, undefined, false, undefined, this),
-                  bookmark.isError && /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
+                  bookmark.isError && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
                     error: bookmark.error
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
+          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
             className: "overflow-hidden",
-            children: metadata.isError && url !== "/gopost" ? /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(QueryErrorCard, {
+            children: metadata.isError && url !== "/gopost" ? /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(QueryErrorCard, {
               title: "This page failed to load",
               error: metadata.error,
               onRetry: () => void metadata.refetch(),
               className: "m-4"
-            }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(BrowserPage, {
+            }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(BrowserPage, {
               url,
               metadata: metadata.data?.metadata,
               user
@@ -23871,68 +24269,68 @@ function BrowserApp({ user }) {
           }, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("aside", {
+      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("aside", {
         className: "grid content-start gap-3",
         children: [
-          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
+          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
             className: "p-3",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("h3", {
+              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h3", {
                 className: "font-black text-ocean",
                 children: "Bookmarks"
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
                 className: "mt-2 grid gap-1 text-sm",
-                children: bookmarks.isLoading ? /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(jsx_dev_runtime11.Fragment, {
+                children: bookmarks.isLoading ? /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(jsx_dev_runtime12.Fragment, {
                   children: [
-                    /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
+                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SkeletonRow, {
                       className: "h-7"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
+                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SkeletonRow, {
                       className: "mt-1 h-7"
                     }, undefined, false, undefined, this)
                   ]
-                }, undefined, true, undefined, this) : bookmarks.isError ? /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
+                }, undefined, true, undefined, this) : bookmarks.isError ? /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
                   error: bookmarks.error
-                }, undefined, false, undefined, this) : bookmarks.data?.bookmarks.length ? bookmarks.data.bookmarks.map((item) => /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("button", {
+                }, undefined, false, undefined, this) : bookmarks.data?.bookmarks.length ? bookmarks.data.bookmarks.map((item) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("button", {
                   className: "truncate rounded px-2 py-1 text-left hover:bg-sky-50",
                   onClick: () => navigate(item.url),
                   children: item.title
-                }, item.id, false, undefined, this)) : /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("span", {
+                }, item.id, false, undefined, this)) : /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
                   className: "text-slate-500",
                   children: "No bookmarks yet."
                 }, undefined, false, undefined, this)
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(Card, {
+          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
             className: "p-3",
             children: [
-              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("h3", {
+              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h3", {
                 className: "font-black text-ocean",
                 children: "History"
               }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
                 className: "mt-2 grid gap-1 text-sm",
-                children: history.isLoading ? /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(jsx_dev_runtime11.Fragment, {
+                children: history2.isLoading ? /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(jsx_dev_runtime12.Fragment, {
                   children: [
-                    /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
+                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SkeletonRow, {
                       className: "h-7"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
+                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SkeletonRow, {
                       className: "mt-1 h-7"
                     }, undefined, false, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(SkeletonRow, {
+                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SkeletonRow, {
                       className: "mt-1 h-7"
                     }, undefined, false, undefined, this)
                   ]
-                }, undefined, true, undefined, this) : history.isError ? /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ErrorNotice, {
-                  error: history.error
-                }, undefined, false, undefined, this) : history.data?.history.length ? history.data.history.slice(0, 8).map((item) => /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("button", {
+                }, undefined, true, undefined, this) : history2.isError ? /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
+                  error: history2.error
+                }, undefined, false, undefined, this) : history2.data?.history.length ? history2.data.history.slice(0, 8).map((item) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("button", {
                   className: "truncate rounded px-2 py-1 text-left hover:bg-sky-50",
                   onClick: () => navigate(item.url),
                   children: item.title
-                }, item.id, false, undefined, this)) : /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("span", {
+                }, item.id, false, undefined, this)) : /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
                   className: "text-slate-500",
                   children: "No history yet."
                 }, undefined, false, undefined, this)
@@ -23950,42 +24348,42 @@ function BrowserPage({
   user
 }) {
   if (url === "/gopost") {
-    return /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+    return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
       className: "h-[520px] overflow-auto",
-      children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(GOpostClassic, {
+      children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(GOpostClassic, {
         user,
         embedded: true
       }, undefined, false, undefined, this)
     }, undefined, false, undefined, this);
   }
   if (metadata?.embeddable) {
-    return /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("iframe", {
+    return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("iframe", {
       className: "h-[520px] w-full bg-white",
       src: metadata.url,
       title: metadata.title,
       sandbox: "allow-forms allow-scripts allow-same-origin allow-popups"
     }, undefined, false, undefined, this);
   }
-  return /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
     className: "grid min-h-[520px] place-items-center bg-slate-50 p-6 text-center",
-    children: /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("div", {
+    children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
       className: "max-w-md",
       children: [
-        /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("h2", {
+        /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h2", {
           className: "text-2xl font-black text-ocean",
           children: metadata?.title ?? url
         }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("p", {
+        /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("p", {
           className: "mt-2 text-sm leading-6 text-slate-600",
           children: metadata?.description || metadata?.reason || "This site cannot be safely embedded here."
         }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime11.jsxDEV("a", {
+        /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("a", {
           className: "mt-4 inline-flex items-center gap-2 rounded-lg bg-ocean px-4 py-2 text-sm font-bold text-white",
           href: metadata?.url ?? url,
           target: "_blank",
           rel: "noreferrer",
           children: [
-            /* @__PURE__ */ jsx_dev_runtime11.jsxDEV(ExternalLink, {
+            /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ExternalLink, {
               size: 16
             }, undefined, false, undefined, this),
             "Open externally"
@@ -23996,28 +24394,925 @@ function BrowserPage({
   }, undefined, false, undefined, this);
 }
 
+// apps/web/src/features/notes/NotesApp.tsx
+var import_react14 = __toESM(require_react(), 1);
+var jsx_dev_runtime13 = __toESM(require_jsx_dev_runtime(), 1);
+function renderMarkdown(markdown) {
+  const blocks = markdown.split(/\n\n+/).filter(Boolean);
+  if (!blocks.length) {
+    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
+      className: "text-sm text-slate-500",
+      children: "Nothing to preview yet."
+    }, undefined, false, undefined, this);
+  }
+  return blocks.map((block) => {
+    const blockKey = `block-${block}`;
+    const lines = block.split(`
+`);
+    if (lines.every((line) => line.trim().startsWith("- "))) {
+      return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("ul", {
+        className: "list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700",
+        children: lines.map((line) => /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("li", {
+          children: line.trim().slice(2)
+        }, `${blockKey}-${line}`, false, undefined, this))
+      }, blockKey, false, undefined, this);
+    }
+    const heading = lines[0].match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      const Tag = heading[1].length === 1 ? "h2" : heading[1].length === 2 ? "h3" : "h4";
+      return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Tag, {
+        className: "font-black text-ocean",
+        children: heading[2]
+      }, blockKey, false, undefined, this);
+    }
+    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
+      className: "whitespace-pre-wrap text-sm leading-6 text-slate-700",
+      children: block
+    }, blockKey, false, undefined, this);
+  });
+}
+function NotesApp() {
+  const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = import_react14.useState(null);
+  const [draft, setDraft] = import_react14.useState({ title: "", body: "" });
+  const [tab, setTab] = import_react14.useState("Edit");
+  const notes = useQuery({
+    queryKey: ["notes"],
+    queryFn: () => api("/api/notes")
+  });
+  const selectedNote = notes.data?.notes.find((note) => note.id === selectedId) ?? notes.data?.notes[0] ?? null;
+  const selectedNoteId = selectedNote?.id ?? null;
+  import_react14.useEffect(() => {
+    if (!selectedNote)
+      return;
+    setSelectedId(selectedNote.id);
+    setDraft({ title: selectedNote.title, body: selectedNote.body });
+  }, [selectedNoteId]);
+  const createNote = useMutation({
+    mutationFn: () => api("/api/notes", {
+      method: "POST",
+      body: JSON.stringify({ title: "New Note", body: "" })
+    }),
+    onSuccess: ({ note }) => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      setSelectedId(note.id);
+      setDraft({ title: note.title, body: note.body });
+      setTab("Edit");
+    }
+  });
+  const saveNote = useMutation({
+    mutationFn: () => api(`/api/notes/${selectedId}`, {
+      method: "PATCH",
+      body: JSON.stringify(draft)
+    }),
+    onSuccess: ({ note }) => {
+      queryClient.setQueryData(["notes"], (current) => ({
+        notes: current?.notes.map((item) => item.id === note.id ? note : item) ?? [note]
+      }));
+      setDraft({ title: note.title, body: note.body });
+    }
+  });
+  const removeNote = useMutation({
+    mutationFn: (noteId) => api(`/api/notes/${noteId}`, { method: "DELETE" }),
+    onSuccess: (_, noteId) => {
+      queryClient.setQueryData(["notes"], (current) => ({
+        notes: current?.notes.filter((item) => item.id !== noteId) ?? []
+      }));
+      setSelectedId((current) => current === noteId ? null : current);
+    }
+  });
+  if (notes.isError) {
+    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(QueryErrorCard, {
+      title: "Notes failed to load",
+      error: notes.error,
+      onRetry: () => void notes.refetch(),
+      className: "p-4"
+    }, undefined, false, undefined, this);
+  }
+  if (!notes.data) {
+    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(SkeletonCard, {
+      lines: 5,
+      className: "p-4"
+    }, undefined, false, undefined, this);
+  }
+  const dirty = Boolean(selectedNote) && (draft.title !== selectedNote?.title || draft.body !== selectedNote?.body);
+  return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+    className: "grid gap-3 lg:grid-cols-[220px_1fr]",
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Card, {
+        className: "p-3",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+            className: "flex items-center justify-between gap-2",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("h2", {
+                className: "text-lg font-black text-ocean",
+                children: "Notes Mini"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
+                type: "button",
+                className: "px-2 py-1 text-xs",
+                onClick: () => createNote.mutate(),
+                disabled: createNote.isPending,
+                children: createNote.isPending ? "Adding..." : "New Note"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+            className: "mt-3 grid gap-2",
+            children: [
+              notes.data.notes.map((note) => /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("button", {
+                type: "button",
+                className: `rounded-xl border px-3 py-2 text-left transition ${note.id === selectedNote?.id ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-white/80 hover:border-sky-200 hover:bg-sky-50/60"}`,
+                onClick: () => {
+                  setSelectedId(note.id);
+                  setDraft({ title: note.title, body: note.body });
+                },
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+                    className: "font-bold text-ocean",
+                    children: note.title || "Untitled Note"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+                    className: "mt-1 line-clamp-2 text-xs text-slate-500",
+                    children: note.body || "Empty note"
+                  }, undefined, false, undefined, this)
+                ]
+              }, note.id, true, undefined, this)),
+              !notes.data.notes.length && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
+                className: "text-sm text-slate-500",
+                children: "No notes yet. Create your first one."
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Card, {
+        className: "p-4",
+        children: selectedNote ? /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+          className: "grid gap-4",
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+              className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Input, {
+                  value: draft.title,
+                  onChange: (event) => setDraft((current) => ({
+                    ...current,
+                    title: event.target.value
+                  })),
+                  placeholder: "Untitled Note",
+                  className: "font-bold"
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+                  className: "flex flex-wrap gap-2",
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Tabs, {
+                      tabs: ["Edit", "Preview"],
+                      active: tab,
+                      onChange: (value) => setTab(value)
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
+                      type: "button",
+                      onClick: () => saveNote.mutate(),
+                      disabled: !dirty || saveNote.isPending,
+                      children: saveNote.isPending ? "Saving..." : "Save"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
+                      type: "button",
+                      variant: "danger",
+                      onClick: () => removeNote.mutate(selectedNote.id),
+                      disabled: removeNote.isPending,
+                      children: "Delete"
+                    }, undefined, false, undefined, this)
+                  ]
+                }, undefined, true, undefined, this)
+              ]
+            }, undefined, true, undefined, this),
+            tab === "Edit" ? /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Textarea, {
+              value: draft.body,
+              onChange: (event) => setDraft((current) => ({
+                ...current,
+                body: event.target.value
+              })),
+              placeholder: "Write your markdown note here...",
+              className: "min-h-[320px]"
+            }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+              className: "grid min-h-[320px] content-start gap-3 rounded-xl border border-slate-200 bg-white/70 p-4",
+              children: renderMarkdown(draft.body)
+            }, undefined, false, undefined, this),
+            (saveNote.isError || removeNote.isError || createNote.isError) && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(ErrorNotice, {
+              error: saveNote.error ?? removeNote.error ?? createNote.error
+            }, undefined, false, undefined, this)
+          ]
+        }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+          className: "grid min-h-[240px] place-items-center text-sm text-slate-500",
+          children: "Pick a note to start editing."
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/features/paint/PaintApp.tsx
+var import_react15 = __toESM(require_react(), 1);
+var jsx_dev_runtime14 = __toESM(require_jsx_dev_runtime(), 1);
+var palette = [
+  "transparent",
+  "#111827",
+  "#ef4444",
+  "#f59e0b",
+  "#fde047",
+  "#22c55e",
+  "#0ea5e9",
+  "#6366f1",
+  "#d946ef",
+  "#ffffff"
+];
+function drawingPreview(pixels) {
+  const preview = pixels.slice(0, 16);
+  const cells = Array.from({ length: preview.length }, (_, cellIndex) => ({
+    cellIndex,
+    pixel: preview[cellIndex]
+  }));
+  return cells.map(({ cellIndex, pixel }) => /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("span", {
+    className: "h-2.5 w-2.5 rounded-[2px] border border-slate-200",
+    style: { background: pixel === "transparent" ? "#ffffff" : pixel }
+  }, `preview-${cellIndex}-${pixel}`, false, undefined, this));
+}
+function PaintApp() {
+  const queryClient = useQueryClient();
+  const [activeId, setActiveId] = import_react15.useState(null);
+  const [selectedColor, setSelectedColor] = import_react15.useState("#111827");
+  const [draftName, setDraftName] = import_react15.useState("Untitled Canvas");
+  const [draftPixels, setDraftPixels] = import_react15.useState([]);
+  const [drawing, setDrawing] = import_react15.useState(false);
+  const drawings = useQuery({
+    queryKey: ["paint-drawings"],
+    queryFn: () => api("/api/paint/drawings")
+  });
+  const active = drawings.data?.drawings.find((item) => item.id === activeId) ?? drawings.data?.drawings[0] ?? null;
+  const activeDrawingId = active?.id ?? null;
+  import_react15.useEffect(() => {
+    if (!active)
+      return;
+    setActiveId(active.id);
+    setDraftName(active.name);
+    setDraftPixels(active.pixels);
+  }, [activeDrawingId]);
+  import_react15.useEffect(() => {
+    const stop = () => setDrawing(false);
+    window.addEventListener("mouseup", stop);
+    return () => window.removeEventListener("mouseup", stop);
+  }, []);
+  const createDrawing = useMutation({
+    mutationFn: () => api("/api/paint/drawings", {
+      method: "POST",
+      body: JSON.stringify({ name: "New Canvas", width: 16, height: 16 })
+    }),
+    onSuccess: ({ drawing: drawing2 }) => {
+      queryClient.invalidateQueries({ queryKey: ["paint-drawings"] });
+      setActiveId(drawing2.id);
+      setDraftName(drawing2.name);
+      setDraftPixels(drawing2.pixels);
+    }
+  });
+  const saveDrawing = useMutation({
+    mutationFn: () => api(`/api/paint/drawings/${activeId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name: draftName, pixels: draftPixels })
+    }),
+    onSuccess: ({ drawing: drawing2 }) => {
+      queryClient.setQueryData(["paint-drawings"], (current) => ({
+        drawings: current?.drawings.map((item) => item.id === drawing2.id ? drawing2 : item) ?? [drawing2]
+      }));
+      setDraftName(drawing2.name);
+      setDraftPixels(drawing2.pixels);
+    }
+  });
+  const removeDrawing = useMutation({
+    mutationFn: (drawingId) => api(`/api/paint/drawings/${drawingId}`, { method: "DELETE" }),
+    onSuccess: (_, drawingId) => {
+      queryClient.setQueryData(["paint-drawings"], (current) => ({
+        drawings: current?.drawings.filter((item) => item.id !== drawingId) ?? []
+      }));
+      setActiveId((current) => current === drawingId ? null : current);
+    }
+  });
+  if (drawings.isError) {
+    return /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(QueryErrorCard, {
+      title: "Pixel Paint failed to load",
+      error: drawings.error,
+      onRetry: () => void drawings.refetch(),
+      className: "p-4"
+    }, undefined, false, undefined, this);
+  }
+  if (!drawings.data) {
+    return /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(SkeletonCard, {
+      lines: 6,
+      className: "p-4"
+    }, undefined, false, undefined, this);
+  }
+  const paintPixel = (index2) => {
+    setDraftPixels((current) => current.map((pixel, pixelIndex) => pixelIndex === index2 ? selectedColor : pixel));
+  };
+  const dirty = Boolean(active) && (draftName !== active?.name || draftPixels.some((pixel, index2) => pixel !== active?.pixels[index2]));
+  const canvasCells = Array.from({ length: draftPixels.length }, (_, cellIndex) => ({
+    cellIndex,
+    pixel: draftPixels[cellIndex]
+  }));
+  return /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+    className: "grid gap-3 xl:grid-cols-[220px_1fr]",
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Card, {
+        className: "p-3",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+            className: "flex items-center justify-between gap-2",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("h2", {
+                className: "text-lg font-black text-ocean",
+                children: "Pixel Paint"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                type: "button",
+                className: "px-2 py-1 text-xs",
+                onClick: () => createDrawing.mutate(),
+                disabled: createDrawing.isPending,
+                children: createDrawing.isPending ? "Adding..." : "New"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+            className: "mt-3 grid gap-2",
+            children: drawings.data.drawings.map((item) => /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("button", {
+              type: "button",
+              className: `rounded-xl border px-3 py-2 text-left transition ${item.id === active?.id ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-white/80 hover:border-sky-200 hover:bg-sky-50/60"}`,
+              onClick: () => {
+                setActiveId(item.id);
+                setDraftName(item.name);
+                setDraftPixels(item.pixels);
+              },
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                  className: "font-bold text-ocean",
+                  children: item.name
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                  className: "mt-2 grid grid-cols-8 gap-0.5",
+                  children: drawingPreview(item.pixels)
+                }, undefined, false, undefined, this)
+              ]
+            }, item.id, true, undefined, this))
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Card, {
+        className: "p-4",
+        children: active ? /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+          className: "grid gap-4",
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+              className: "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Input, {
+                  value: draftName,
+                  onChange: (event) => setDraftName(event.target.value),
+                  className: "font-bold"
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                  className: "flex flex-wrap gap-2",
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                      type: "button",
+                      onClick: () => saveDrawing.mutate(),
+                      disabled: !dirty || saveDrawing.isPending,
+                      children: saveDrawing.isPending ? "Saving..." : "Save"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                      type: "button",
+                      variant: "soft",
+                      onClick: () => setDraftPixels(active.pixels),
+                      children: "Reset"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                      type: "button",
+                      variant: "soft",
+                      onClick: () => setDraftPixels(active.pixels.map(() => "transparent")),
+                      children: "Clear"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                      type: "button",
+                      variant: "danger",
+                      onClick: () => removeDrawing.mutate(active.id),
+                      disabled: removeDrawing.isPending,
+                      children: "Delete"
+                    }, undefined, false, undefined, this)
+                  ]
+                }, undefined, true, undefined, this)
+              ]
+            }, undefined, true, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+              className: "grid gap-3 lg:grid-cols-[200px_1fr]",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                  className: "grid content-start gap-3",
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                      children: [
+                        /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                          className: "text-xs font-bold uppercase tracking-wide text-slate-500",
+                          children: "Palette"
+                        }, undefined, false, undefined, this),
+                        /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                          className: "mt-2 flex flex-wrap gap-2",
+                          children: palette.map((color) => {
+                            const activeColor = selectedColor === color;
+                            return /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("button", {
+                              type: "button",
+                              className: `h-9 w-9 rounded-lg border-2 ${activeColor ? "border-ocean" : "border-slate-200"}`,
+                              style: {
+                                background: color === "transparent" ? "linear-gradient(135deg, #fff 40%, #fecaca 40%, #fecaca 60%, #fff 60%)" : color
+                              },
+                              onClick: () => setSelectedColor(color),
+                              "aria-label": color === "transparent" ? "Eraser" : `Select ${color}`
+                            }, color, false, undefined, this);
+                          })
+                        }, undefined, false, undefined, this)
+                      ]
+                    }, undefined, true, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                      className: "rounded-xl border border-slate-200 bg-white/70 p-3 text-sm text-slate-600",
+                      children: "Drag across the canvas to paint retro icons and tiny pixel art."
+                    }, undefined, false, undefined, this)
+                  ]
+                }, undefined, true, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                  className: "overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-4",
+                  children: /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+                    className: "mx-auto grid w-fit gap-1",
+                    style: {
+                      gridTemplateColumns: `repeat(${active.width}, minmax(0, 1fr))`
+                    },
+                    children: canvasCells.map(({ cellIndex, pixel }) => /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("button", {
+                      type: "button",
+                      className: "h-6 w-6 rounded-[4px] border border-slate-200 transition hover:scale-110",
+                      style: {
+                        background: pixel === "transparent" ? "#ffffff" : pixel
+                      },
+                      onMouseDown: () => {
+                        setDrawing(true);
+                        paintPixel(cellIndex);
+                      },
+                      onMouseEnter: () => {
+                        if (drawing)
+                          paintPixel(cellIndex);
+                      },
+                      "aria-label": `Pixel ${cellIndex + 1}`
+                    }, `pixel-${cellIndex}-${pixel}`, false, undefined, this))
+                  }, undefined, false, undefined, this)
+                }, undefined, false, undefined, this)
+              ]
+            }, undefined, true, undefined, this),
+            (saveDrawing.isError || removeDrawing.isError || createDrawing.isError) && /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(ErrorNotice, {
+              error: saveDrawing.error ?? removeDrawing.error ?? createDrawing.error
+            }, undefined, false, undefined, this)
+          ]
+        }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
+          className: "grid min-h-[240px] place-items-center text-sm text-slate-500",
+          children: "Create a canvas to start painting."
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/features/desktop/appRegistry.tsx
+var jsx_dev_runtime15 = __toESM(require_jsx_dev_runtime(), 1);
+var appRegistry = {
+  gopost: {
+    label: "GOpost!",
+    short: "GO",
+    render: ({ user, openApp }) => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(GOpostApp, {
+      user,
+      openApp
+    }, undefined, false, undefined, this)
+  },
+  store: {
+    label: "Store",
+    short: "Store",
+    render: ({ openApp }) => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(StoreApp, {
+      onOpen: (next) => openApp(next)
+    }, undefined, false, undefined, this)
+  },
+  settings: {
+    label: "Settings",
+    short: "Set",
+    render: ({ user }) => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(SettingsApp, {
+      user
+    }, undefined, false, undefined, this)
+  },
+  minecraft: {
+    label: "Minecraft",
+    short: "MC",
+    render: () => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(MinecraftApp, {}, undefined, false, undefined, this)
+  },
+  messenger: {
+    label: "Messenger",
+    short: "Msg",
+    render: () => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(MessengerApp, {}, undefined, false, undefined, this)
+  },
+  browser: {
+    label: "Browser",
+    short: "Web",
+    render: ({ user }) => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(BrowserApp, {
+      user
+    }, undefined, false, undefined, this)
+  },
+  notes: {
+    label: "Notes Mini",
+    short: "Note",
+    render: () => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(NotesApp, {}, undefined, false, undefined, this)
+  },
+  paint: {
+    label: "Pixel Paint",
+    short: "Paint",
+    render: () => /* @__PURE__ */ jsx_dev_runtime15.jsxDEV(PaintApp, {}, undefined, false, undefined, this)
+  }
+};
+function appLabel(app) {
+  return appRegistry[app]?.label ?? app;
+}
+function appShort(app) {
+  return appRegistry[app]?.short ?? app;
+}
+
+// apps/web/src/features/desktop/MenuBar.tsx
+var jsx_dev_runtime16 = __toESM(require_jsx_dev_runtime(), 1);
+function MenuBar({
+  user,
+  startOpen,
+  setStartOpen,
+  notifications,
+  darkMode
+}) {
+  const queryClient = useQueryClient();
+  const allNotifications = notifications.data?.notifications ?? [];
+  const unread = allNotifications.filter((item) => !item.read).length;
+  const logout = useMutation({
+    mutationFn: () => api("/api/auth/logout", { method: "POST" }),
+    onSuccess: () => queryClient.setQueryData(["session"], { user: null })
+  });
+  const markAllRead = useMutation({
+    mutationFn: () => api("/api/notifications/read-all", { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    }
+  });
+  return /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(jsx_dev_runtime16.Fragment, {
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("header", {
+        className: cn("fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/50 bg-white/70 px-3 text-xs font-bold backdrop-blur-xl", "dark:bg-slate-800/70 dark:border-slate-600 dark:text-slate-200"),
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("div", {
+            className: "flex items-center gap-2",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Button, {
+                variant: startOpen ? "primary" : "soft",
+                className: "h-6 rounded-full px-3 py-1 text-xs",
+                onClick: () => setStartOpen(!startOpen),
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Menu, {
+                    size: 14
+                  }, undefined, false, undefined, this),
+                  "Start"
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                children: "macOS Dev"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                className: "hidden sm:inline",
+                children: "File"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                className: "hidden sm:inline",
+                children: "Edit"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                className: "hidden sm:inline",
+                children: "Window"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("div", {
+            className: "flex items-center gap-2",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                className: "hidden sm:inline",
+                children: user.displayName
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Tooltip, {
+                label: "Unread notifications",
+                children: /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                  className: "relative inline-flex",
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Bell, {
+                      size: 15
+                    }, undefined, false, undefined, this),
+                    unread > 0 && /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Badge, {
+                      className: "absolute -right-3 -top-2 px-1",
+                      children: unread
+                    }, undefined, false, undefined, this)
+                  ]
+                }, undefined, true, undefined, this)
+              }, undefined, false, undefined, this),
+              unread > 0 && /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Tooltip, {
+                label: "Mark all notifications read",
+                children: /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Button, {
+                  variant: "soft",
+                  className: "h-6 px-2 py-1 text-xs",
+                  onClick: () => markAllRead.mutate(),
+                  disabled: markAllRead.isPending,
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(CheckCheck, {
+                      size: 14
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                      className: "hidden sm:inline",
+                      children: "Mark all read"
+                    }, undefined, false, undefined, this)
+                  ]
+                }, undefined, true, undefined, this)
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(Button, {
+                variant: "soft",
+                className: "h-6 px-2 py-1 text-xs",
+                onClick: () => logout.mutate(),
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(LogOut, {
+                    size: 14
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("span", {
+                    className: "hidden sm:inline",
+                    children: "Logout"
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      notifications.isError && /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("div", {
+        className: "fixed right-4 top-12 z-50 w-full max-w-sm",
+        children: /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(ErrorNotice, {
+          error: notifications.error,
+          message: "Notifications are temporarily unavailable."
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this),
+      logout.isError && /* @__PURE__ */ jsx_dev_runtime16.jsxDEV("div", {
+        className: "fixed left-1/2 top-12 z-50 w-full max-w-sm -translate-x-1/2",
+        children: /* @__PURE__ */ jsx_dev_runtime16.jsxDEV(ErrorNotice, {
+          error: logout.error
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/features/desktop/DesktopIcon.tsx
+var jsx_dev_runtime17 = __toESM(require_jsx_dev_runtime(), 1);
+function DesktopIcon({ app, onOpen }) {
+  return /* @__PURE__ */ jsx_dev_runtime17.jsxDEV("button", {
+    type: "button",
+    className: "grid w-24 justify-items-center gap-2 text-center text-xs font-bold text-white drop-shadow",
+    onClick: onOpen,
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime17.jsxDEV(AppIcon, {
+        app: app.id
+      }, undefined, false, undefined, this),
+      app.name
+    ]
+  }, undefined, true, undefined, this);
+}
+function DockButton({
+  app,
+  unread,
+  onOpen
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime17.jsxDEV("button", {
+    type: "button",
+    className: cn("app-tile relative transition hover:-translate-y-2 hover:scale-110", app.id),
+    onClick: onOpen,
+    children: [
+      appShort(app.id),
+      unread > 0 && /* @__PURE__ */ jsx_dev_runtime17.jsxDEV(Badge, {
+        className: "absolute -right-2 -top-2 px-1",
+        children: unread
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+function AppIcon({ app }) {
+  return /* @__PURE__ */ jsx_dev_runtime17.jsxDEV("span", {
+    className: cn("app-tile", app),
+    children: appShort(app)
+  }, undefined, false, undefined, this);
+}
+
+// apps/web/src/features/desktop/StartMenu.tsx
+var jsx_dev_runtime18 = __toESM(require_jsx_dev_runtime(), 1);
+function StartMenu({
+  apps,
+  onOpen
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Card, {
+    className: "fixed left-3 top-12 z-50 w-[calc(100vw-1.5rem)] max-w-72 p-3 shadow-glass",
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+        className: "border-b border-slate-200 px-2 pb-3 text-lg font-black text-ocean",
+        children: "macOS Dev 3.4.6"
+      }, undefined, false, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+        className: "mt-2 grid gap-1",
+        children: apps.map((app) => /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Button, {
+          variant: "ghost",
+          className: "justify-start",
+          onClick: () => onOpen(app.id),
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(AppIcon, {
+              app: app.id
+            }, undefined, false, undefined, this),
+            "Open ",
+            app.name
+          ]
+        }, app.id, true, undefined, this))
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/features/desktop/AppWindow.tsx
+var import_react16 = __toESM(require_react(), 1);
+var jsx_dev_runtime19 = __toESM(require_jsx_dev_runtime(), 1);
+function AppWindow({
+  app,
+  title,
+  active,
+  children,
+  position,
+  onMove,
+  onClose,
+  onFocus
+}) {
+  const dragging = import_react16.useRef(false);
+  const resizing = import_react16.useRef(false);
+  const offset = import_react16.useRef({ x: 0, y: 0 });
+  const resizeStart = import_react16.useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const handleTitleBarMouseDown = import_react16.useCallback((e) => {
+    if (e.target.closest("button"))
+      return;
+    e.preventDefault();
+    dragging.current = true;
+    const articleEl = e.currentTarget.parentElement;
+    if (!articleEl)
+      return;
+    const rect = articleEl.getBoundingClientRect();
+    offset.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    const currentWidth = position?.width ?? rect.width;
+    const currentHeight = position?.height ?? rect.height;
+    const handleMouseMove = (ev) => {
+      if (!dragging.current)
+        return;
+      onMove({
+        x: ev.clientX - offset.current.x,
+        y: ev.clientY - offset.current.y,
+        width: currentWidth,
+        height: currentHeight
+      });
+    };
+    const handleMouseUp = () => {
+      dragging.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  }, [onMove, position?.height, position?.width]);
+  const handleResizeMouseDown = import_react16.useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizing.current = true;
+    const articleEl = e.currentTarget.closest("article");
+    if (!articleEl)
+      return;
+    const rect = articleEl.getBoundingClientRect();
+    resizeStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: position?.width ?? rect.width,
+      height: position?.height ?? rect.height
+    };
+    const handleMouseMove = (ev) => {
+      if (!resizing.current)
+        return;
+      const width = Math.max(320, resizeStart.current.width + (ev.clientX - resizeStart.current.x));
+      const height = Math.max(260, resizeStart.current.height + (ev.clientY - resizeStart.current.y));
+      onMove({
+        x: position?.x ?? rect.left,
+        y: position?.y ?? rect.top,
+        width,
+        height
+      });
+    };
+    const handleMouseUp = () => {
+      resizing.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  }, [onMove, position?.height, position?.width, position?.x, position?.y]);
+  const positionStyle = position ? {
+    left: position.x,
+    top: position.y,
+    width: position.width,
+    height: position.height
+  } : undefined;
+  return /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("article", {
+    className: cn("window pointer-events-auto absolute overflow-hidden rounded-2xl border border-white/60 bg-white/85 shadow-glass backdrop-blur-xl", app, active && "z-30 ring-2 ring-white/70"),
+    style: positionStyle,
+    onMouseDown: onFocus,
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("div", {
+        role: "toolbar",
+        className: "flex h-10 cursor-grab items-center gap-3 border-b border-slate-200 bg-gradient-to-b from-white to-slate-100 px-3 active:cursor-grabbing",
+        onMouseDown: handleTitleBarMouseDown,
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("span", {
+            className: "flex gap-1.5",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("i", {
+                className: "h-3 w-3 rounded-full bg-red-400"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("i", {
+                className: "h-3 w-3 rounded-full bg-yellow-400"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("i", {
+                className: "h-3 w-3 rounded-full bg-green-400"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("b", {
+            className: "flex-1 text-center text-sm text-slate-700",
+            children: title
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime19.jsxDEV(Button, {
+            variant: "danger",
+            className: "h-7 w-7 p-0",
+            onClick: onClose,
+            children: "x"
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime19.jsxDEV(ScrollArea, {
+        className: "h-[calc(100%-2.5rem)] max-h-[calc(100vh-11rem)] p-4",
+        children
+      }, undefined, false, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime19.jsxDEV("button", {
+        type: "button",
+        className: "absolute bottom-1 right-1 h-5 w-5 cursor-se-resize rounded-full border border-slate-300 bg-white/80 text-[10px] text-slate-500 shadow-sm",
+        onMouseDown: handleResizeMouseDown,
+        "aria-label": `Resize ${title}`,
+        children: "↘"
+      }, undefined, false, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// apps/web/src/features/desktop/Dock.tsx
+var jsx_dev_runtime20 = __toESM(require_jsx_dev_runtime(), 1);
+function Dock({
+  installedApps,
+  messengerUnread,
+  gopostUnread,
+  onOpen
+}) {
+  return /* @__PURE__ */ jsx_dev_runtime20.jsxDEV("nav", {
+    className: cn("fixed bottom-3 left-1/2 z-50 flex min-h-20 max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-end justify-center gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-3 py-3 shadow-dock backdrop-blur-xl sm:bottom-4 sm:max-w-none sm:flex-nowrap sm:px-4", "dark:bg-slate-800/40 dark:border-slate-600"),
+    children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime20.jsxDEV(DockButton, {
+      app,
+      unread: app.id === "messenger" ? messengerUnread : app.id === "gopost" ? gopostUnread : 0,
+      onOpen: () => onOpen(app.id)
+    }, app.id, false, undefined, this))
+  }, undefined, false, undefined, this);
+}
+
 // apps/web/src/features/desktop/DesktopShell.tsx
-var jsx_dev_runtime12 = __toESM(require_jsx_dev_runtime(), 1);
-var labels = {
-  gopost: "GOpost!",
-  store: "Store",
-  settings: "Settings",
-  minecraft: "Minecraft",
-  messenger: "Messenger",
-  browser: "Browser",
-  notes: "Notes Mini",
-  paint: "Pixel Paint"
-};
-var shorts = {
-  gopost: "GO",
-  store: "Store",
-  settings: "Set",
-  minecraft: "MC",
-  messenger: "Msg",
-  browser: "Web",
-  notes: "Note",
-  paint: "Paint"
-};
+var jsx_dev_runtime21 = __toESM(require_jsx_dev_runtime(), 1);
 function DesktopShell({ user }) {
   const queryClient = useQueryClient();
   const {
@@ -24050,16 +25345,16 @@ function DesktopShell({ user }) {
   });
   const installedApps = apps.data?.apps.filter((app) => app.installed || app.id === "store") ?? [];
   const allNotifications = notifications.data?.notifications ?? [];
-  const unread = allNotifications.filter((item) => !item.read).length;
   const messengerUnread = allNotifications.filter((item) => !item.read && item.type === "message").length;
   const gopostUnread = allNotifications.filter((item) => !item.read && item.type !== "message").length;
   const darkMode = settings.data?.settings.darkMode === true;
-  import_react12.useEffect(() => {
-    if (desktop.data?.desktopState.openedApps.length) {
-      hydrateOpenedApps(desktop.data.desktopState.openedApps);
-    }
-  }, [desktop.data?.desktopState.openedApps, hydrateOpenedApps]);
-  import_react12.useEffect(() => {
+  const openedAppsJson = JSON.stringify(desktop.data?.desktopState.openedApps) ?? null;
+  import_react17.useEffect(() => {
+    if (!desktop.data?.desktopState.openedApps.length)
+      return;
+    hydrateOpenedApps(desktop.data.desktopState.openedApps);
+  }, [openedAppsJson]);
+  import_react17.useEffect(() => {
     const socket = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live`);
     socket.onmessage = () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -24068,22 +25363,12 @@ function DesktopShell({ user }) {
     };
     return () => socket.close();
   }, [queryClient]);
-  const logout = useMutation({
-    mutationFn: () => api("/api/auth/logout", { method: "POST" }),
-    onSuccess: () => queryClient.setQueryData(["session"], { user: null })
-  });
-  const markAllRead = useMutation({
-    mutationFn: () => api("/api/notifications/read-all", { method: "POST" }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  });
   const wallpaper = settings.data?.settings.wallpaper ?? "dev-bright";
   const bootError = apps.error ?? settings.error ?? desktop.error;
   if (bootError) {
-    return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("main", {
+    return /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("main", {
       className: "grid min-h-screen place-items-center bg-wallpaper p-4 font-display",
-      children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(QueryErrorCard, {
+      children: /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(QueryErrorCard, {
         title: "Desktop failed to load",
         error: bootError,
         onRetry: () => {
@@ -24095,358 +25380,131 @@ function DesktopShell({ user }) {
       }, undefined, false, undefined, this)
     }, undefined, false, undefined, this);
   }
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("main", {
-    className: cn("desktop-root min-h-screen overflow-hidden bg-wallpaper p-4 pb-28 pt-12 font-display", "dark:bg-slate-900", wallpaper === "sunset" && "bg-wallpaper-sunset", darkMode && "dark"),
+  return /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("main", {
+    className: cn("desktop-root min-h-screen overflow-hidden bg-wallpaper p-3 pb-32 pt-12 font-display sm:p-4 sm:pb-28", "dark:bg-slate-900", wallpaper === "sunset" && "bg-wallpaper-sunset", darkMode && "dark"),
     children: [
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("header", {
-        className: cn("fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/50 bg-white/70 px-3 text-xs font-bold backdrop-blur-xl", "dark:bg-slate-800/70 dark:border-slate-600 dark:text-slate-200"),
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-            className: "flex items-center gap-2",
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
-                variant: startOpen ? "primary" : "soft",
-                className: "h-6 rounded-full px-3 py-1 text-xs",
-                onClick: () => setStartOpen(!startOpen),
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Menu, {
-                    size: 14
-                  }, undefined, false, undefined, this),
-                  "Start"
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                children: "macOS Dev"
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                className: "hidden sm:inline",
-                children: "File"
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                className: "hidden sm:inline",
-                children: "Edit"
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                className: "hidden sm:inline",
-                children: "Window"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-            className: "flex items-center gap-2",
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                children: user.displayName
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Tooltip, {
-                label: "Unread notifications",
-                children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-                  className: "relative inline-flex",
-                  children: [
-                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Bell, {
-                      size: 15
-                    }, undefined, false, undefined, this),
-                    unread > 0 && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Badge, {
-                      className: "absolute -right-3 -top-2 px-1",
-                      children: unread
-                    }, undefined, false, undefined, this)
-                  ]
-                }, undefined, true, undefined, this)
-              }, undefined, false, undefined, this),
-              unread > 0 && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Tooltip, {
-                label: "Mark all notifications read",
-                children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
-                  variant: "soft",
-                  className: "h-6 px-2 py-1 text-xs",
-                  onClick: () => markAllRead.mutate(),
-                  disabled: markAllRead.isPending,
-                  children: [
-                    /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(CheckCheck, {
-                      size: 14
-                    }, undefined, false, undefined, this),
-                    "Mark all read"
-                  ]
-                }, undefined, true, undefined, this)
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
-                variant: "soft",
-                className: "h-6 px-2 py-1 text-xs",
-                onClick: () => logout.mutate(),
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(LogOut, {
-                    size: 14
-                  }, undefined, false, undefined, this),
-                  "Logout"
-                ]
-              }, undefined, true, undefined, this)
-            ]
-          }, undefined, true, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      notifications.isError && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-        className: "fixed right-4 top-12 z-50 w-full max-w-sm",
-        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
-          error: notifications.error,
-          message: "Notifications are temporarily unavailable."
-        }, undefined, false, undefined, this)
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(MenuBar, {
+        user,
+        startOpen,
+        setStartOpen,
+        notifications,
+        darkMode
       }, undefined, false, undefined, this),
-      logout.isError && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-        className: "fixed left-1/2 top-12 z-50 w-full max-w-sm -translate-x-1/2",
-        children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorNotice, {
-          error: logout.error
-        }, undefined, false, undefined, this)
-      }, undefined, false, undefined, this),
-      startOpen && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(StartMenu, {
+      startOpen && /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(StartMenu, {
         apps: installedApps,
         onOpen: (app) => openApp(app)
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("section", {
-        className: cn("welcome-card ml-0 mt-7 w-full max-w-2xl rounded-2xl border border-white/60 bg-white/30 p-6 text-white shadow-glass backdrop-blur md:ml-5", "dark:bg-slate-800/30 dark:border-slate-600"),
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
+        className: cn("welcome-card ml-0 mt-7 w-full max-w-3xl rounded-2xl border border-white/60 bg-white/30 p-5 text-white shadow-glass backdrop-blur md:ml-5 md:p-6", "dark:border-slate-600 dark:bg-slate-800/30"),
         children: [
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h1", {
-            className: "text-4xl font-black md:text-5xl",
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("h1", {
+            className: "text-3xl font-black md:text-5xl",
             children: "macOS Dev 3.4.6"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("p", {
-            className: "mt-2 max-w-xl text-sm leading-6 text-white/95",
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("p", {
+            className: "mt-2 max-w-2xl text-sm leading-6 text-white/95",
             children: [
               "Welcome back, ",
               user.displayName,
-              ". This desktop is now powered by a local gateway plus Auth, Social, Realtime, and Platform services."
+              ". Notes Mini, Pixel Paint, editable profiles, real GOpost follow counts, and installable PWA support are now live on the desktop."
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+            className: "mt-4 flex flex-wrap gap-2 text-xs font-bold text-white/95",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("span", {
+                className: "rounded-full bg-white/20 px-3 py-1",
+                children: "Notes Mini"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("span", {
+                className: "rounded-full bg-white/20 px-3 py-1",
+                children: "Pixel Paint"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("span", {
+                className: "rounded-full bg-white/20 px-3 py-1",
+                children: "GOpost Profiles"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("span", {
+                className: "rounded-full bg-white/20 px-3 py-1",
+                children: "Installable Web App"
+              }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("section", {
-        className: "absolute right-5 top-16 hidden gap-4 md:grid",
-        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(DesktopIcon, {
-          app,
-          onOpen: () => openApp(app.id)
-        }, app.id, false, undefined, this))
-      }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("section", {
-        className: "window-layer pointer-events-none absolute inset-x-4 bottom-28 top-12",
-        children: openApps.map((app) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(AppWindow, {
-          app,
-          active: activeApp === app,
-          title: labels[app] ?? app,
-          position: windowPositions[app],
-          onMove: (pos) => setWindowPosition(app, pos),
-          onClose: () => closeApp(app),
-          onFocus: () => setActiveApp(app),
-          children: /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ErrorBoundary, {
-            title: `${labels[app] ?? app} crashed`,
-            fallbackClassName: "m-4 grid gap-3 p-4",
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
+        className: "mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden",
+        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
+          type: "button",
+          className: "rounded-2xl border border-white/45 bg-white/25 p-3 text-left text-white shadow-glass backdrop-blur",
+          onClick: () => openApp(app.id),
+          children: /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+            className: "flex items-center gap-3",
             children: [
-              app === "gopost" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(GOpostApp, {
-                user
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(AppIcon, {
+                app: app.id
               }, undefined, false, undefined, this),
-              app === "store" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(StoreApp, {
-                onOpen: (next) => openApp(next)
-              }, undefined, false, undefined, this),
-              app === "settings" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(SettingsApp, {}, undefined, false, undefined, this),
-              app === "minecraft" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(MinecraftApp, {}, undefined, false, undefined, this),
-              app === "messenger" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(MessengerApp, {}, undefined, false, undefined, this),
-              app === "browser" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(BrowserApp, {
-                user
-              }, undefined, false, undefined, this),
-              app === "notes" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
-                className: "p-4",
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
                 children: [
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h2", {
-                    className: "text-xl font-black",
-                    children: "Notes Mini"
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                    className: "font-black",
+                    children: app.name
                   }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("p", {
-                    className: "mt-2 text-sm text-slate-600",
-                    children: "Installed and ready for a future notes service."
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              app === "paint" && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
-                className: "p-4",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("h2", {
-                    className: "text-xl font-black",
-                    children: "Pixel Paint"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("p", {
-                    className: "mt-2 text-sm text-slate-600",
-                    children: "Installed and ready for a future creative app."
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                    className: "text-xs text-white/80",
+                    children: app.category
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this)
             ]
           }, undefined, true, undefined, this)
-        }, app, false, undefined, this))
+        }, app.id, false, undefined, this))
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("nav", {
-        className: cn("fixed bottom-4 left-1/2 z-50 flex min-h-20 -translate-x-1/2 items-end gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-4 py-3 shadow-dock backdrop-blur-xl", "dark:bg-slate-800/40 dark:border-slate-600"),
-        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(DockButton, {
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
+        className: "absolute right-5 top-16 hidden gap-4 md:grid",
+        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(DesktopIcon, {
           app,
-          unread: app.id === "messenger" ? messengerUnread : app.id === "gopost" ? gopostUnread : 0,
           onOpen: () => openApp(app.id)
         }, app.id, false, undefined, this))
-      }, undefined, false, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
-}
-function StartMenu({
-  apps,
-  onOpen
-}) {
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Card, {
-    className: "fixed left-3 top-12 z-50 w-72 p-3 shadow-glass",
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-        className: "border-b border-slate-200 px-2 pb-3 text-lg font-black text-ocean",
-        children: "macOS Dev 3.4.6"
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-        className: "mt-2 grid gap-1",
-        children: apps.map((app) => /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
-          variant: "ghost",
-          className: "justify-start",
-          onClick: () => onOpen(app.id),
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(AppIcon, {
-              app: app.id
-            }, undefined, false, undefined, this),
-            "Open ",
-            app.name
-          ]
-        }, app.id, true, undefined, this))
-      }, undefined, false, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
-}
-function DesktopIcon({ app, onOpen }) {
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("button", {
-    type: "button",
-    className: "grid w-24 justify-items-center gap-2 text-center text-xs font-bold text-white drop-shadow",
-    onClick: onOpen,
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(AppIcon, {
-        app: app.id
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
+        className: "window-layer pointer-events-none absolute inset-x-4 bottom-28 top-12",
+        children: openApps.map((app) => {
+          const entry = appRegistry[app];
+          return /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(AppWindow, {
+            app,
+            active: activeApp === app,
+            title: appLabel(app),
+            position: windowPositions[app],
+            onMove: (pos) => setWindowPosition(app, pos),
+            onClose: () => closeApp(app),
+            onFocus: () => setActiveApp(app),
+            children: /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(ErrorBoundary, {
+              title: `${appLabel(app)} crashed`,
+              fallbackClassName: "m-4 grid gap-3 p-4",
+              children: entry ? entry.render({ user, openApp }) : /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                className: "p-4 text-sm text-slate-500",
+                children: [
+                  "Unknown app: ",
+                  app
+                ]
+              }, undefined, true, undefined, this)
+            }, undefined, false, undefined, this)
+          }, app, false, undefined, this);
+        })
       }, undefined, false, undefined, this),
-      app.name
-    ]
-  }, undefined, true, undefined, this);
-}
-function DockButton({
-  app,
-  unread,
-  onOpen
-}) {
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("button", {
-    type: "button",
-    className: cn("app-tile relative transition hover:-translate-y-2 hover:scale-110", app.id),
-    onClick: onOpen,
-    children: [
-      shorts[app.id] ?? app.icon,
-      unread > 0 && /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Badge, {
-        className: "absolute -right-2 -top-2 px-1",
-        children: unread
-      }, undefined, false, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
-}
-function AppIcon({ app }) {
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-    className: cn("app-tile", app),
-    children: shorts[app] ?? app
-  }, undefined, false, undefined, this);
-}
-function AppWindow({
-  app,
-  title,
-  active,
-  children,
-  position,
-  onMove,
-  onClose,
-  onFocus
-}) {
-  const dragging = import_react12.useRef(false);
-  const offset = import_react12.useRef({ x: 0, y: 0 });
-  const handleTitleBarMouseDown = import_react12.useCallback((e) => {
-    if (e.target.closest("button"))
-      return;
-    e.preventDefault();
-    dragging.current = true;
-    const articleEl = e.currentTarget.parentElement;
-    if (!articleEl)
-      return;
-    const rect = articleEl.getBoundingClientRect();
-    offset.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-    const currentWidth = position?.width ?? rect.width;
-    const handleMouseMove = (ev) => {
-      if (!dragging.current)
-        return;
-      onMove({
-        x: ev.clientX - offset.current.x,
-        y: ev.clientY - offset.current.y,
-        width: currentWidth
-      });
-    };
-    const handleMouseUp = () => {
-      dragging.current = false;
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  }, [onMove, position?.width]);
-  const positionStyle = position ? { left: position.x, top: position.y, width: position.width } : undefined;
-  return /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("article", {
-    className: cn("window pointer-events-auto absolute overflow-hidden rounded-2xl border border-white/60 bg-white/85 shadow-glass backdrop-blur-xl", app, active && "z-30 ring-2 ring-white/70"),
-    style: positionStyle,
-    onMouseDown: onFocus,
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("div", {
-        role: "toolbar",
-        className: "flex h-10 cursor-grab items-center gap-3 border-b border-slate-200 bg-gradient-to-b from-white to-slate-100 px-3 active:cursor-grabbing",
-        onMouseDown: handleTitleBarMouseDown,
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("span", {
-            className: "flex gap-1.5",
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("i", {
-                className: "h-3 w-3 rounded-full bg-red-400"
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("i", {
-                className: "h-3 w-3 rounded-full bg-yellow-400"
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("i", {
-                className: "h-3 w-3 rounded-full bg-green-400"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV("b", {
-            className: "flex-1 text-center text-sm text-slate-700",
-            children: title
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(Button, {
-            variant: "danger",
-            className: "h-7 w-7 p-0",
-            onClick: onClose,
-            children: "x"
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime12.jsxDEV(ScrollArea, {
-        className: "max-h-[calc(100vh-11rem)] p-4",
-        children
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Dock, {
+        installedApps,
+        messengerUnread,
+        gopostUnread,
+        onOpen: openApp
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
 }
 
 // apps/web/src/main.tsx
-var jsx_dev_runtime13 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime22 = __toESM(require_jsx_dev_runtime(), 1);
 var queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
@@ -24461,153 +25519,166 @@ var queryClient = new QueryClient({
     }
   })
 });
+function registerPwa() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator))
+    return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
 function Root() {
-  return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(QueryClientProvider, {
+  return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(QueryClientProvider, {
     client: queryClient,
     children: [
-      /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(FeedbackToasts, {}, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(ErrorBoundary, {
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(FeedbackToasts, {}, undefined, false, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(ErrorBoundary, {
         title: "The app crashed",
         fallbackClassName: "mx-auto mt-10 w-full max-w-xl p-6",
-        children: /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(App, {}, undefined, false, undefined, this)
+        children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Router, {
+          children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(App, {}, undefined, false, undefined, this)
+        }, undefined, false, undefined, this)
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
 }
 function App() {
+  const { pathname } = useRouter();
   const session = useQuery({
     queryKey: ["session"],
     queryFn: () => api("/api/auth/me")
   });
-  if (location.pathname === "/gopost") {
+  if (pathname === "/gopost") {
     if (session.isLoading)
-      return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+      return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
         className: "grid min-h-screen place-items-center bg-gopost-grid font-display font-bold text-ocean",
         children: "Loading GOpost..."
       }, undefined, false, undefined, this);
     if (session.isError)
-      return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+      return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
         className: "bg-gopost-grid p-4",
-        children: /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(QueryErrorCard, {
+        children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(QueryErrorCard, {
           title: "GOpost could not start",
           error: session.error,
-          onRetry: () => session.refetch(),
+          onRetry: () => void session.refetch(),
           className: "mx-auto mt-8 max-w-xl"
         }, undefined, false, undefined, this)
       }, undefined, false, undefined, this);
-    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(GOpostClassic, {
+    return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(GOpostClassic, {
       user: session.data?.user ?? null
     }, undefined, false, undefined, this);
   }
   if (session.isLoading)
-    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+    return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
       className: "grid min-h-screen place-items-center bg-wallpaper font-display font-bold text-white",
       children: "Starting macOS Dev 3.4.6..."
     }, undefined, false, undefined, this);
   if (session.isError)
-    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("main", {
+    return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("main", {
       className: "grid min-h-screen place-items-center bg-wallpaper p-4 font-display",
-      children: /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(QueryErrorCard, {
+      children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(QueryErrorCard, {
         title: "Desktop startup failed",
         error: session.error,
-        onRetry: () => session.refetch(),
+        onRetry: () => void session.refetch(),
         className: "w-full max-w-xl"
       }, undefined, false, undefined, this)
     }, undefined, false, undefined, this);
   if (!session.data?.user)
-    return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(LoginScreen, {}, undefined, false, undefined, this);
-  return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(DesktopShell, {
+    return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(AuthForm, {}, undefined, false, undefined, this);
+  return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(DesktopShell, {
     user: session.data.user
   }, undefined, false, undefined, this);
 }
-function LoginScreen() {
-  const [mode, setMode] = import_react13.useState("Login");
-  const [username, setUsername] = import_react13.useState("demo");
-  const [displayName, setDisplayName] = import_react13.useState("Tara Games");
-  const [password, setPassword] = import_react13.useState("demo123");
-  const [error, setError] = import_react13.useState("");
+function AuthForm() {
   const queryClient2 = useQueryClient();
+  const [mode, setMode] = import_react18.useState("Login");
+  const [username, setUsername] = import_react18.useState("");
+  const [displayName, setDisplayName] = import_react18.useState("");
+  const [password, setPassword] = import_react18.useState("");
+  const [error, setError] = import_react18.useState("");
   const auth = useMutation({
-    mutationFn: async () => {
-      const path = mode === "Login" ? "/api/auth/login" : "/api/auth/signup";
-      const payload = mode === "Login" ? { username, password } : { username, displayName, password };
-      return api(path, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-    },
-    onSuccess: (data) => queryClient2.setQueryData(["session"], data),
+    mutationFn: () => mode === "Login" ? api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    }) : api("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ username, displayName, password })
+    }),
+    onSuccess: () => queryClient2.invalidateQueries({ queryKey: ["session"] }),
     onError: (err) => setError(apiErrorMessage(err, "Authentication failed"))
   });
-  import_react13.useEffect(() => setError(""), [mode]);
-  return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("main", {
+  return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("main", {
     className: "grid min-h-screen place-items-center bg-wallpaper p-4 font-display",
-    children: /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Card, {
-      className: "w-full max-w-md p-6 shadow-glass",
+    children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Card, {
+      className: "grid w-full max-w-sm gap-6 p-8",
       children: [
-        /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
-          className: "text-sm font-bold text-ocean",
-          children: "macOS Dev 3.4.6"
+        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("h1", {
+              className: "text-3xl font-black text-ocean",
+              children: "macOS Dev"
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("p", {
+              className: "text-sm text-slate-600",
+              children: "Version 3.4.6"
+            }, undefined, false, undefined, this)
+          ]
+        }, undefined, true, undefined, this),
+        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Tabs, {
+          tabs: ["Login", "Sign Up"],
+          active: mode,
+          onChange: (tab) => {
+            setMode(tab);
+            setError("");
+          }
         }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("h1", {
-          className: "mt-2 text-4xl font-black text-ink",
-          children: "GOpost! Platform"
-        }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
-          className: "mt-2 text-sm leading-6 text-slate-600",
-          children: "Sign in to open the desktop, Store, GOpost, Messenger, Settings, and Minecraft Launcher."
-        }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
-          className: "mt-5",
-          children: /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Tabs, {
-            tabs: ["Login", "Signup"],
-            active: mode,
-            onChange: setMode
-          }, undefined, false, undefined, this)
-        }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("form", {
-          className: "mt-5 grid gap-3",
+        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("form", {
+          className: "grid gap-4",
           onSubmit: (event) => {
             event.preventDefault();
             auth.mutate();
           },
           children: [
-            /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("label", {
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
+              htmlFor: "auth-username",
               className: "grid gap-1 text-sm font-bold",
+              children: "Username"
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
+              id: "auth-username",
+              value: username,
+              onChange: (event) => setUsername(event.target.value)
+            }, undefined, false, undefined, this),
+            mode === "Sign Up" && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(jsx_dev_runtime22.Fragment, {
               children: [
-                "Username",
-                /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Input, {
-                  value: username,
-                  onChange: (event) => setUsername(event.target.value)
-                }, undefined, false, undefined, this)
-              ]
-            }, undefined, true, undefined, this),
-            mode === "Signup" && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("label", {
-              className: "grid gap-1 text-sm font-bold",
-              children: [
-                "Display name",
-                /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Input, {
+                /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
+                  htmlFor: "auth-display-name",
+                  className: "grid gap-1 text-sm font-bold",
+                  children: "Display Name"
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
+                  id: "auth-display-name",
                   value: displayName,
                   onChange: (event) => setDisplayName(event.target.value)
                 }, undefined, false, undefined, this)
               ]
             }, undefined, true, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("label", {
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
+              htmlFor: "auth-password",
               className: "grid gap-1 text-sm font-bold",
-              children: [
-                "Password",
-                /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Input, {
-                  type: "password",
-                  value: password,
-                  onChange: (event) => setPassword(event.target.value)
-                }, undefined, false, undefined, this)
-              ]
-            }, undefined, true, undefined, this),
-            error && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+              children: "Password"
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
+              id: "auth-password",
+              type: "password",
+              value: password,
+              onChange: (event) => setPassword(event.target.value)
+            }, undefined, false, undefined, this),
+            error && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
               className: "rounded-lg bg-red-100 px-3 py-2 text-sm font-bold text-red-700",
               children: error
             }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
+            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Button, {
+              type: "submit",
               disabled: auth.isPending,
               children: auth.isPending ? "Working..." : mode === "Login" ? "Enter Desktop" : "Create Account"
             }, undefined, false, undefined, this)
@@ -24623,21 +25694,24 @@ function LogoutButton() {
     mutationFn: () => api("/api/auth/logout", { method: "POST" }),
     onSuccess: () => queryClient2.setQueryData(["session"], { user: null })
   });
-  return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
+  return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Button, {
+    type: "button",
     variant: "soft",
     className: "h-7 px-2 py-1 text-xs",
     onClick: () => logout.mutate(),
     children: [
-      /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(LogOut, {
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(LogOut, {
         size: 14
       }, undefined, false, undefined, this),
       "Logout"
     ]
   }, undefined, true, undefined, this);
 }
-import_client.createRoot(document.getElementById("root")).render(/* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Root, {}, undefined, false, undefined, this));
+registerPwa();
+var rootElement = document.getElementById("root");
+if (rootElement) {
+  import_client.createRoot(rootElement).render(/* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Root, {}, undefined, false, undefined, this));
+}
 export {
   LogoutButton
 };
-
-//# debugId=02C5D8E0239FC98F64756E2164756E21

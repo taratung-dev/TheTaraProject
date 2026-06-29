@@ -15,7 +15,7 @@ import { cn } from "../../lib/ui";
 import { appLabel, appRegistry } from "./appRegistry";
 import { MenuBar } from "./MenuBar";
 import { StartMenu } from "./StartMenu";
-import { DesktopIcon } from "./DesktopIcon";
+import { DesktopIcon, AppIcon } from "./DesktopIcon";
 import { AppWindow } from "./AppWindow";
 import { Dock } from "./Dock";
 
@@ -63,11 +63,14 @@ export function DesktopShell({ user }: { user: User }) {
 
   const darkMode = settings.data?.settings.darkMode === true;
 
+  const openedAppsJson =
+    JSON.stringify(desktop.data?.desktopState.openedApps) ?? null;
+
   useEffect(() => {
-    if (desktop.data?.desktopState.openedApps.length) {
-      hydrateOpenedApps(desktop.data.desktopState.openedApps);
-    }
-  }, [desktop.data?.desktopState.openedApps, hydrateOpenedApps]);
+    if (!desktop.data?.desktopState.openedApps.length) return;
+    hydrateOpenedApps(desktop.data.desktopState.openedApps);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openedAppsJson]);
 
   useEffect(() => {
     const socket = new WebSocket(
@@ -104,7 +107,7 @@ export function DesktopShell({ user }: { user: User }) {
   return (
     <main
       className={cn(
-        "desktop-root min-h-screen overflow-hidden bg-wallpaper p-4 pb-28 pt-12 font-display",
+        "desktop-root min-h-screen overflow-hidden bg-wallpaper p-3 pb-32 pt-12 font-display sm:p-4 sm:pb-28",
         "dark:bg-slate-900",
         wallpaper === "sunset" && "bg-wallpaper-sunset",
         darkMode && "dark",
@@ -127,15 +130,47 @@ export function DesktopShell({ user }: { user: User }) {
 
       <section
         className={cn(
-          "welcome-card ml-0 mt-7 w-full max-w-2xl rounded-2xl border border-white/60 bg-white/30 p-6 text-white shadow-glass backdrop-blur md:ml-5",
-          "dark:bg-slate-800/30 dark:border-slate-600",
+          "welcome-card ml-0 mt-7 w-full max-w-3xl rounded-2xl border border-white/60 bg-white/30 p-5 text-white shadow-glass backdrop-blur md:ml-5 md:p-6",
+          "dark:border-slate-600 dark:bg-slate-800/30",
         )}
       >
-        <h1 className="text-4xl font-black md:text-5xl">macOS Dev 3.4.6</h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-white/95">
-          Welcome back, {user.displayName}. This desktop is now powered by a
-          local gateway plus Auth, Social, Realtime, and Platform services.
+        <h1 className="text-3xl font-black md:text-5xl">macOS Dev 3.4.6</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/95">
+          Welcome back, {user.displayName}. Notes Mini, Pixel Paint, editable
+          profiles, real GOpost follow counts, and installable PWA support are
+          now live on the desktop.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-white/95">
+          <span className="rounded-full bg-white/20 px-3 py-1">Notes Mini</span>
+          <span className="rounded-full bg-white/20 px-3 py-1">
+            Pixel Paint
+          </span>
+          <span className="rounded-full bg-white/20 px-3 py-1">
+            GOpost Profiles
+          </span>
+          <span className="rounded-full bg-white/20 px-3 py-1">
+            Installable Web App
+          </span>
+        </div>
+      </section>
+
+      <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
+        {installedApps.map((app) => (
+          <button
+            key={app.id}
+            type="button"
+            className="rounded-2xl border border-white/45 bg-white/25 p-3 text-left text-white shadow-glass backdrop-blur"
+            onClick={() => openApp(app.id as OpenApp)}
+          >
+            <div className="flex items-center gap-3">
+              <AppIcon app={app.id} />
+              <div>
+                <div className="font-black">{app.name}</div>
+                <div className="text-xs text-white/80">{app.category}</div>
+              </div>
+            </div>
+          </button>
+        ))}
       </section>
 
       <section className="absolute right-5 top-16 hidden gap-4 md:grid">

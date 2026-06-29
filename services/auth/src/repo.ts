@@ -116,3 +116,20 @@ export function createUser(
     );
   return Number(result.lastInsertRowid);
 }
+
+export function updateUserProfile(
+  userId: number,
+  input: { displayName: string; avatarColor: string },
+) {
+  db.prepare(
+    "UPDATE users SET display_name = ?, avatar_color = ? WHERE id = ?",
+  ).run(input.displayName, input.avatarColor, userId);
+  return userById(userId);
+}
+
+export function updateUserPassword(userId: number, passwordHash: string) {
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
+    passwordHash,
+    userId,
+  );
+}

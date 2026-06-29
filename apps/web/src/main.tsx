@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   MutationCache,
@@ -14,7 +14,7 @@ import type { Session } from "./lib/types";
 import { api, apiErrorMessage } from "./lib/api";
 import { ErrorBoundary } from "./lib/ErrorBoundary";
 import { FeedbackToasts, QueryErrorCard, reportUiError } from "./lib/feedback";
-import { Router, useRouter, Route } from "./lib/router";
+import { Router, useRouter } from "./lib/router";
 import { Button, Card, Input, Tabs } from "./lib/ui";
 import { DesktopShell } from "./features/desktop/DesktopShell";
 import { GOpostClassic } from "./features/gopost/GOpostClassic";
@@ -34,6 +34,13 @@ const queryClient = new QueryClient({
     },
   }),
 });
+
+function registerPwa() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}
 
 function Root() {
   return (
@@ -71,7 +78,7 @@ function App() {
           <QueryErrorCard
             title="GOpost could not start"
             error={session.error}
-            onRetry={() => session.refetch()}
+            onRetry={() => void session.refetch()}
             className="mx-auto mt-8 max-w-xl"
           />
         </div>
@@ -91,7 +98,7 @@ function App() {
         <QueryErrorCard
           title="Desktop startup failed"
           error={session.error}
-          onRetry={() => session.refetch()}
+          onRetry={() => void session.refetch()}
           className="w-full max-w-xl"
         />
       </main>
@@ -123,8 +130,6 @@ function AuthForm() {
     onError: (err) => setError(apiErrorMessage(err, "Authentication failed")),
   });
 
-  useEffect(() => setError(""), [mode]);
-
   return (
     <main className="grid min-h-screen place-items-center bg-wallpaper p-4 font-display">
       <Card className="grid w-full max-w-sm gap-6 p-8">
@@ -135,7 +140,10 @@ function AuthForm() {
         <Tabs
           tabs={["Login", "Sign Up"]}
           active={mode}
-          onChange={(tab) => setMode(tab as "Login" | "Sign Up")}
+          onChange={(tab) => {
+            setMode(tab as "Login" | "Sign Up");
+            setError("");
+          }}
         />
         <form
           className="grid gap-4"
@@ -144,36 +152,50 @@ function AuthForm() {
             auth.mutate();
           }}
         >
-          <label className="grid gap-1 text-sm font-bold">
+          <label
+            htmlFor="auth-username"
+            className="grid gap-1 text-sm font-bold"
+          >
             Username
-            <Input
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-            />
           </label>
+          <Input
+            id="auth-username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
           {mode === "Sign Up" && (
-            <label className="grid gap-1 text-sm font-bold">
-              Display Name
+            <>
+              <label
+                htmlFor="auth-display-name"
+                className="grid gap-1 text-sm font-bold"
+              >
+                Display Name
+              </label>
               <Input
+                id="auth-display-name"
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
               />
-            </label>
+            </>
           )}
-          <label className="grid gap-1 text-sm font-bold">
+          <label
+            htmlFor="auth-password"
+            className="grid gap-1 text-sm font-bold"
+          >
             Password
-            <Input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
           </label>
+          <Input
+            id="auth-password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
           {error && (
             <div className="rounded-lg bg-red-100 px-3 py-2 text-sm font-bold text-red-700">
               {error}
             </div>
           )}
-          <Button disabled={auth.isPending}>
+          <Button type="submit" disabled={auth.isPending}>
             {auth.isPending
               ? "Working..."
               : mode === "Login"
@@ -194,6 +216,7 @@ export function LogoutButton() {
   });
   return (
     <Button
+      type="button"
       variant="soft"
       className="h-7 px-2 py-1 text-xs"
       onClick={() => logout.mutate()}
@@ -204,4 +227,9 @@ export function LogoutButton() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<Root />);
+registerPwa();
+
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(<Root />);
+}

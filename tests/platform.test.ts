@@ -1,10 +1,18 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { migrate, resetForTests, seed } from "../src/server/db";
 import {
+  createDrawing,
+  createNote,
   db,
+  deleteDrawing,
+  deleteNote,
   desktopState,
+  listDrawings,
+  listNotes,
   seedPlatform,
   settings,
+  updateDrawing,
+  updateNote,
 } from "../services/platform/src/repo";
 
 async function resetAndSeed() {
@@ -31,7 +39,10 @@ describe("platform service storage", () => {
         "gopost",
         "messenger",
         "minecraft",
+        "notes",
+        "paint",
         "settings",
+        "store",
       ]);
     }
   });
@@ -88,9 +99,55 @@ describe("platform service storage", () => {
         "settings",
         "minecraft",
         "messenger",
+        "notes",
+        "paint",
       ],
       openedApps: ["gopost", "store"],
       wallpaper: "dev-bright",
     });
+  });
+
+  test("creates and updates markdown notes", () => {
+    const created = createNote(1, { title: "Roadmap", body: "# Phase 6" });
+    expect(created.title).toBe("Roadmap");
+
+    const updated = updateNote(1, created.id, { body: "# Phase 6\n\n- notes" });
+    expect(updated?.body).toContain("notes");
+    expect(listNotes(1).some((note) => note.id === created.id)).toBe(true);
+  });
+
+  test("deletes notes owned by the user", () => {
+    const created = createNote(1, { title: "Throwaway", body: "temporary" });
+    expect(deleteNote(1, created.id)).toBe(1);
+    expect(listNotes(1).some((note) => note.id === created.id)).toBe(false);
+  });
+
+  test("creates and updates pixel drawings", () => {
+    const drawing = createDrawing(1, {
+      name: "Icon Draft",
+      width: 8,
+      height: 8,
+      pixels: Array.from({ length: 64 }, (_, index) =>
+        index === 0 ? "#111827" : "transparent",
+      ),
+    });
+    expect(drawing.width).toBe(8);
+    expect(drawing.pixels[0]).toBe("#111827");
+
+    const updated = updateDrawing(1, drawing.id, {
+      name: "Icon Final",
+      pixels: drawing.pixels.map((pixel, index) =>
+        index === 1 ? "#22c55e" : pixel,
+      ),
+    });
+    expect(updated?.name).toBe("Icon Final");
+    expect(updated?.pixels[1]).toBe("#22c55e");
+    expect(listDrawings(1).some((item) => item.id === drawing.id)).toBe(true);
+  });
+
+  test("deletes drawings owned by the user", () => {
+    const drawing = createDrawing(1, { name: "Delete Me" });
+    expect(deleteDrawing(1, drawing.id)).toBe(1);
+    expect(listDrawings(1).some((item) => item.id === drawing.id)).toBe(false);
   });
 });

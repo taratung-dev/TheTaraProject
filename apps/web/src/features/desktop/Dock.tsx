@@ -17,7 +17,7 @@ export function Dock({
   return (
     <nav
       className={cn(
-        "fixed bottom-4 left-1/2 z-50 flex min-h-20 -translate-x-1/2 items-end gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-4 py-3 shadow-dock backdrop-blur-xl",
+        "fixed bottom-3 left-1/2 z-50 flex min-h-20 max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-end justify-center gap-3 overflow-x-auto rounded-3xl border border-white/60 bg-white/40 px-3 py-3 shadow-dock backdrop-blur-xl sm:bottom-4 sm:max-w-none sm:flex-nowrap sm:px-4",
         "dark:bg-slate-800/40 dark:border-slate-600",
       )}
     >
