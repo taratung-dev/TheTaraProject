@@ -165,11 +165,13 @@ describe("platform service repo", () => {
     expect(s.wallpaper).toBe("dev-bright");
   });
 
-  test("desktopState(userId) returns an object with a dockApps array", () => {
+  test("desktopState(userId) returns desktop app arrays", () => {
     const demoUser = userByUsername("demo");
     expect(demoUser).not.toBeNull();
     const state = desktopState(demoUser!.id);
     expect(Array.isArray(state.dockApps)).toBe(true);
+    expect(Array.isArray(state.openedApps)).toBe(true);
+    expect(Array.isArray(state.recentApps)).toBe(true);
     expect(state.dockApps.length).toBeGreaterThan(0);
     expect(state).toHaveProperty("wallpaper");
   });

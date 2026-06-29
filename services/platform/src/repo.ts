@@ -11,6 +11,7 @@ export type SettingsRow = {
 export type DesktopStateRow = {
   dockApps: string;
   openedApps: string;
+  recentApps: string;
   wallpaper: string;
 };
 
@@ -40,6 +41,19 @@ const DEFAULT_NOTE_BODY = `# Welcome to Notes Mini
 
 ## Tip
 Use the preview tab to check headings and lists.`;
+
+const DEFAULT_DOCK_APPS = [
+  "gopost",
+  "browser",
+  "store",
+  "settings",
+  "minecraft",
+  "messenger",
+  "notes",
+  "paint",
+];
+
+const DEFAULT_SESSION_APPS = ["gopost", "store"];
 
 function defaultPixels(width = 16, height = 16) {
   return Array.from({ length: width * height }, () => "transparent");
@@ -74,6 +88,7 @@ export function migratePlatform() {
       user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       dock_apps TEXT NOT NULL,
       opened_apps TEXT NOT NULL,
+      recent_apps TEXT NOT NULL,
       wallpaper TEXT NOT NULL
     );
 
@@ -107,6 +122,14 @@ export function migratePlatform() {
   try {
     db.exec(
       "ALTER TABLE user_settings ADD COLUMN dark_mode INTEGER NOT NULL DEFAULT 0",
+    );
+  } catch {
+    // Column already exists.
+  }
+
+  try {
+    db.exec(
+      `ALTER TABLE desktop_state ADD COLUMN recent_apps TEXT NOT NULL DEFAULT '${JSON.stringify(DEFAULT_SESSION_APPS)}'`,
     );
   } catch {
     // Column already exists.
@@ -198,19 +221,13 @@ export function seedPlatform() {
     db.prepare(
       "INSERT OR IGNORE INTO user_settings VALUES (?, ?, ?, ?, ?, ?)",
     ).run(userId, "dev-bright", "glass", 1, userId === 2 ? 1 : 0, 0);
-    db.prepare("INSERT OR IGNORE INTO desktop_state VALUES (?, ?, ?, ?)").run(
+    db.prepare(
+      "INSERT OR IGNORE INTO desktop_state (user_id, dock_apps, opened_apps, recent_apps, wallpaper) VALUES (?, ?, ?, ?, ?)",
+    ).run(
       userId,
-      JSON.stringify([
-        "gopost",
-        "browser",
-        "store",
-        "settings",
-        "minecraft",
-        "messenger",
-        "notes",
-        "paint",
-      ]),
-      JSON.stringify(["gopost", "store"]),
+      JSON.stringify(DEFAULT_DOCK_APPS),
+      JSON.stringify(DEFAULT_SESSION_APPS),
+      JSON.stringify(DEFAULT_SESSION_APPS),
       "dev-bright",
     );
     const row = db
@@ -274,23 +291,13 @@ export function settings(userId: number) {
 export function desktopState(userId: number) {
   const row = db
     .query(
-      "SELECT dock_apps AS dockApps, opened_apps AS openedApps, wallpaper FROM desktop_state WHERE user_id = ?",
+      "SELECT dock_apps AS dockApps, opened_apps AS openedApps, recent_apps AS recentApps, wallpaper FROM desktop_state WHERE user_id = ?",
     )
     .get(userId) as DesktopStateRow | null;
   return {
-    dockApps: row
-      ? JSON.parse(row.dockApps)
-      : [
-          "gopost",
-          "browser",
-          "store",
-          "settings",
-          "minecraft",
-          "messenger",
-          "notes",
-          "paint",
-        ],
-    openedApps: row ? JSON.parse(row.openedApps) : ["gopost", "store"],
+    dockApps: row ? JSON.parse(row.dockApps) : DEFAULT_DOCK_APPS,
+    openedApps: row ? JSON.parse(row.openedApps) : DEFAULT_SESSION_APPS,
+    recentApps: row ? JSON.parse(row.recentApps) : DEFAULT_SESSION_APPS,
     wallpaper: row?.wallpaper ?? "dev-bright",
   };
 }

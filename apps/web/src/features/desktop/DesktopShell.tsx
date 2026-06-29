@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AppRecord,
@@ -37,7 +37,7 @@ export function DesktopShell({ user }: { user: User }) {
     closeApp,
     setStartOpen,
     setActiveApp,
-    hydrateOpenedApps,
+    hydrateDesktopState,
     windowPositions,
     setWindowPosition,
   } = useDesktopStore();
@@ -46,10 +46,10 @@ export function DesktopShell({ user }: { user: User }) {
     queryFn: () => api<{ apps: AppRecord[] }>("/api/apps"),
   });
   const syncDesktopState = useMutation({
-    mutationFn: (openedApps: OpenApp[]) =>
+    mutationFn: (nextState: { openedApps: OpenApp[]; recentApps: OpenApp[] }) =>
       api<{ desktopState: DesktopState }>("/api/desktop/state", {
         method: "PATCH",
-        body: JSON.stringify({ openedApps }),
+        body: JSON.stringify(nextState),
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(["desktop-state"], data);
@@ -107,16 +107,40 @@ export function DesktopShell({ user }: { user: User }) {
     () => normalizeOpenApps(desktop.data?.desktopState.openedApps ?? []),
     [desktop.data?.desktopState.openedApps],
   );
-  const serverOpenedAppsJson = useMemo(
-    () => JSON.stringify(serverOpenedApps),
-    [serverOpenedApps],
+  const serverRecentApps = useMemo(
+    () =>
+      normalizeOpenApps(
+        desktop.data?.desktopState.recentApps ??
+          desktop.data?.desktopState.openedApps ??
+          [],
+      ),
+    [
+      desktop.data?.desktopState.openedApps,
+      desktop.data?.desktopState.recentApps,
+    ],
+  );
+  const serverDesktopStateJson = useMemo(
+    () =>
+      JSON.stringify({
+        openedApps: serverOpenedApps,
+        recentApps: serverRecentApps,
+      }),
+    [serverOpenedApps, serverRecentApps],
   );
   const debouncedOpenApps = useDebounce(openApps, 400);
-  const debouncedOpenAppsJson = useMemo(
-    () => JSON.stringify(debouncedOpenApps),
-    [debouncedOpenApps],
+  const debouncedRecentApps = useDebounce(recentApps, 400);
+  const debouncedDesktopState = useMemo(
+    () => ({
+      openedApps: debouncedOpenApps,
+      recentApps: debouncedRecentApps,
+    }),
+    [debouncedOpenApps, debouncedRecentApps],
   );
-  const hasHydratedDesktopState = useRef(false);
+  const debouncedDesktopStateJson = useMemo(
+    () => JSON.stringify(debouncedDesktopState),
+    [debouncedDesktopState],
+  );
+  const [desktopHydrated, setDesktopHydrated] = useState(false);
   const lastDesktopSyncRequest = useRef<string | null>(null);
   const recentNotePreview = recentNote
     ? recentNote.body.replace(/\s+/g, " ").trim() || "Empty note"
@@ -136,26 +160,36 @@ export function DesktopShell({ user }: { user: User }) {
   }, [launcherApps, recentApps]);
 
   useEffect(() => {
-    if (!desktop.isSuccess || hasHydratedDesktopState.current) return;
-    hydrateOpenedApps(serverOpenedApps);
-    hasHydratedDesktopState.current = true;
-  }, [desktop.isSuccess, hydrateOpenedApps, serverOpenedApps]);
+    if (!desktop.isSuccess || desktopHydrated) return;
+    hydrateDesktopState({
+      openedApps: serverOpenedApps,
+      recentApps: serverRecentApps,
+    });
+    setDesktopHydrated(true);
+  }, [
+    desktop.isSuccess,
+    desktopHydrated,
+    hydrateDesktopState,
+    serverOpenedApps,
+    serverRecentApps,
+  ]);
 
   useEffect(() => {
-    if (!desktop.isSuccess) return;
-    if (debouncedOpenAppsJson === serverOpenedAppsJson) {
+    if (!desktop.isSuccess || !desktopHydrated) return;
+    if (debouncedDesktopStateJson === serverDesktopStateJson) {
       lastDesktopSyncRequest.current = null;
       return;
     }
     if (syncDesktopState.isPending) return;
-    if (lastDesktopSyncRequest.current === debouncedOpenAppsJson) return;
-    lastDesktopSyncRequest.current = debouncedOpenAppsJson;
-    syncDesktopState.mutate(debouncedOpenApps);
+    if (lastDesktopSyncRequest.current === debouncedDesktopStateJson) return;
+    lastDesktopSyncRequest.current = debouncedDesktopStateJson;
+    syncDesktopState.mutate(debouncedDesktopState);
   }, [
-    debouncedOpenApps,
-    debouncedOpenAppsJson,
+    debouncedDesktopState,
+    debouncedDesktopStateJson,
     desktop.isSuccess,
-    serverOpenedAppsJson,
+    desktopHydrated,
+    serverDesktopStateJson,
     syncDesktopState,
   ]);
 

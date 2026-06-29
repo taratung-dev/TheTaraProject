@@ -163,14 +163,16 @@ const routes: Route[] = [
       const next = { ...current, ...input };
       db.prepare(
         `
-      INSERT INTO desktop_state (user_id, dock_apps, opened_apps, wallpaper)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(user_id) DO UPDATE SET dock_apps = excluded.dock_apps, opened_apps = excluded.opened_apps, wallpaper = excluded.wallpaper
+      INSERT INTO desktop_state (user_id, dock_apps, opened_apps, recent_apps, wallpaper)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET dock_apps = excluded.dock_apps, opened_apps = excluded.opened_apps,
+        recent_apps = excluded.recent_apps, wallpaper = excluded.wallpaper
     `,
       ).run(
         userId,
         JSON.stringify(next.dockApps),
         JSON.stringify(next.openedApps),
+        JSON.stringify(next.recentApps),
         next.wallpaper,
       );
       return json({ desktopState: desktopState(userId!) });

@@ -136,7 +136,9 @@ export async function seed() {
     0,
   );
 
-  db.prepare("INSERT INTO desktop_state VALUES (?, ?, ?, ?)").run(
+  db.prepare(
+    "INSERT INTO desktop_state (user_id, dock_apps, opened_apps, recent_apps, wallpaper) VALUES (?, ?, ?, ?, ?)",
+  ).run(
     1,
     JSON.stringify([
       "gopost",
@@ -148,6 +150,7 @@ export async function seed() {
       "notes",
       "paint",
     ]),
+    JSON.stringify(["gopost", "store"]),
     JSON.stringify(["gopost", "store"]),
     "dev-bright",
   );

@@ -75,10 +75,11 @@ describe("platform service storage", () => {
 
   test("returns desktop state with persisted dock and window data", () => {
     db.prepare(
-      "UPDATE desktop_state SET dock_apps = ?, opened_apps = ?, wallpaper = ? WHERE user_id = ?",
+      "UPDATE desktop_state SET dock_apps = ?, opened_apps = ?, recent_apps = ?, wallpaper = ? WHERE user_id = ?",
     ).run(
       JSON.stringify(["gopost", "browser", "notes"]),
       JSON.stringify(["notes", "settings"]),
+      JSON.stringify(["settings", "notes", "browser"]),
       "night-sky",
       1,
     );
@@ -86,6 +87,7 @@ describe("platform service storage", () => {
     expect(desktopState(1)).toEqual({
       dockApps: ["gopost", "browser", "notes"],
       openedApps: ["notes", "settings"],
+      recentApps: ["settings", "notes", "browser"],
       wallpaper: "night-sky",
     });
   });
@@ -103,6 +105,7 @@ describe("platform service storage", () => {
         "paint",
       ],
       openedApps: ["gopost", "store"],
+      recentApps: ["gopost", "store"],
       wallpaper: "dev-bright",
     });
   });

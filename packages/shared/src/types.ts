@@ -59,6 +59,7 @@ export type UserSettings = {
 export type DesktopState = {
   dockApps: string[];
   openedApps: string[];
+  recentApps: string[];
   wallpaper: string;
 };
 

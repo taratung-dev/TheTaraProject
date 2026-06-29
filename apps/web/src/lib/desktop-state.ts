@@ -47,7 +47,10 @@ type DesktopStore = {
   setStartOpen: (open: boolean) => void;
   setActiveApp: (app: OpenApp) => void;
   setWindowPosition: (app: OpenApp, position: WindowPosition) => void;
-  hydrateOpenedApps: (apps: readonly string[]) => void;
+  hydrateDesktopState: (state: {
+    openedApps: readonly string[];
+    recentApps?: readonly string[];
+  }) => void;
 };
 
 export const useDesktopStore = create<DesktopStore>()(
@@ -87,15 +90,17 @@ export const useDesktopStore = create<DesktopStore>()(
         set((state) => ({
           windowPositions: { ...state.windowPositions, [app]: position },
         })),
-      hydrateOpenedApps: (apps) =>
+      hydrateDesktopState: ({ openedApps, recentApps }) =>
         set((state) => {
-          const openApps = normalizeOpenApps(apps);
-          const recentApps = state.recentApps.length
-            ? normalizeOpenApps(state.recentApps)
-            : openApps;
+          const openApps = normalizeOpenApps(openedApps);
+          const nextRecentApps = recentApps
+            ? normalizeOpenApps(recentApps)
+            : state.recentApps.length
+              ? normalizeOpenApps(state.recentApps)
+              : openApps;
           return {
             openApps,
-            recentApps,
+            recentApps: nextRecentApps,
             activeApp:
               state.activeApp && openApps.includes(state.activeApp)
                 ? state.activeApp
