@@ -20017,8 +20017,17 @@ var __iconNode3 = [
   ["path", { d: "m12 5 7 7-7 7", key: "xquz4c" }]
 ];
 var ArrowRight = createLucideIcon("arrow-right", __iconNode3);
-// node_modules/lucide-react/dist/esm/icons/bell.mjs
+// node_modules/lucide-react/dist/esm/icons/battery-full.mjs
 var __iconNode4 = [
+  ["path", { d: "M10 10v4", key: "1mb2ec" }],
+  ["path", { d: "M14 10v4", key: "1nt88p" }],
+  ["path", { d: "M22 14v-4", key: "14q9d5" }],
+  ["path", { d: "M6 10v4", key: "1n77qd" }],
+  ["rect", { x: "2", y: "6", width: "16", height: "12", rx: "2", key: "13zb55" }]
+];
+var BatteryFull = createLucideIcon("battery-full", __iconNode4);
+// node_modules/lucide-react/dist/esm/icons/bell.mjs
+var __iconNode5 = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -20028,9 +20037,9 @@ var __iconNode4 = [
     }
   ]
 ];
-var Bell = createLucideIcon("bell", __iconNode4);
+var Bell = createLucideIcon("bell", __iconNode5);
 // node_modules/lucide-react/dist/esm/icons/bookmark.mjs
-var __iconNode5 = [
+var __iconNode6 = [
   [
     "path",
     {
@@ -20039,48 +20048,59 @@ var __iconNode5 = [
     }
   ]
 ];
-var Bookmark = createLucideIcon("bookmark", __iconNode5);
+var Bookmark = createLucideIcon("bookmark", __iconNode6);
 // node_modules/lucide-react/dist/esm/icons/check-check.mjs
-var __iconNode6 = [
+var __iconNode7 = [
   ["path", { d: "M18 6 7 17l-5-5", key: "116fxf" }],
   ["path", { d: "m22 10-7.5 7.5L13 16", key: "ke71qq" }]
 ];
-var CheckCheck = createLucideIcon("check-check", __iconNode6);
+var CheckCheck = createLucideIcon("check-check", __iconNode7);
+// node_modules/lucide-react/dist/esm/icons/chevron-right.mjs
+var __iconNode8 = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+var ChevronRight = createLucideIcon("chevron-right", __iconNode8);
 // node_modules/lucide-react/dist/esm/icons/external-link.mjs
-var __iconNode7 = [
+var __iconNode9 = [
   ["path", { d: "M15 3h6v6", key: "1q9fwt" }],
   ["path", { d: "M10 14 21 3", key: "gplh6r" }],
   ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6", key: "a6xqqp" }]
 ];
-var ExternalLink = createLucideIcon("external-link", __iconNode7);
+var ExternalLink = createLucideIcon("external-link", __iconNode9);
 // node_modules/lucide-react/dist/esm/icons/log-out.mjs
-var __iconNode8 = [
+var __iconNode10 = [
   ["path", { d: "m16 17 5-5-5-5", key: "1bji2h" }],
   ["path", { d: "M21 12H9", key: "dn1m92" }],
   ["path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", key: "1uf3rs" }]
 ];
-var LogOut = createLucideIcon("log-out", __iconNode8);
+var LogOut = createLucideIcon("log-out", __iconNode10);
 // node_modules/lucide-react/dist/esm/icons/menu.mjs
-var __iconNode9 = [
+var __iconNode11 = [
   ["path", { d: "M4 5h16", key: "1tepv9" }],
   ["path", { d: "M4 12h16", key: "1lakjw" }],
   ["path", { d: "M4 19h16", key: "1djgab" }]
 ];
-var Menu = createLucideIcon("menu", __iconNode9);
+var Menu = createLucideIcon("menu", __iconNode11);
 // node_modules/lucide-react/dist/esm/icons/refresh-ccw.mjs
-var __iconNode10 = [
+var __iconNode12 = [
   ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
   ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
   ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
   ["path", { d: "M16 16h5v5", key: "ccwih5" }]
 ];
-var RefreshCcw = createLucideIcon("refresh-ccw", __iconNode10);
+var RefreshCcw = createLucideIcon("refresh-ccw", __iconNode12);
 // node_modules/lucide-react/dist/esm/icons/search.mjs
-var __iconNode11 = [
+var __iconNode13 = [
   ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
   ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
 ];
-var Search = createLucideIcon("search", __iconNode11);
+var Search = createLucideIcon("search", __iconNode13);
+// node_modules/lucide-react/dist/esm/icons/wifi.mjs
+var __iconNode14 = [
+  ["path", { d: "M12 20h.01", key: "zekei9" }],
+  ["path", { d: "M2 8.82a15 15 0 0 1 20 0", key: "dnpr2z" }],
+  ["path", { d: "M5 12.859a10 10 0 0 1 14 0", key: "1x1e6c" }],
+  ["path", { d: "M8.5 16.429a5 5 0 0 1 7 0", key: "1bycff" }]
+];
+var Wifi = createLucideIcon("wifi", __iconNode14);
 // apps/web/src/lib/api.ts
 class ApiError extends Error {
   status;
@@ -22274,22 +22294,30 @@ function QueryErrorCard({
 var import_react8 = __toESM(require_react(), 1);
 var jsx_dev_runtime4 = __toESM(require_jsx_dev_runtime(), 1);
 var RouterContext = import_react8.createContext(null);
-function getSnapshot() {
+function currentRoute() {
   return {
     pathname: location.pathname,
     search: location.search
   };
 }
-function subscribe(callback) {
-  window.addEventListener("popstate", callback);
-  return () => window.removeEventListener("popstate", callback);
-}
 function Router({ children }) {
-  const state = import_react8.useSyncExternalStore(subscribe, getSnapshot);
-  const navigate = import_react8.useCallback((to) => {
-    history.pushState(null, "", to);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+  const [state, setState] = import_react8.useState(currentRoute);
+  const syncState = import_react8.useCallback(() => {
+    const next = currentRoute();
+    setState((current) => current.pathname === next.pathname && current.search === next.search ? current : next);
   }, []);
+  import_react8.useEffect(() => {
+    window.addEventListener("popstate", syncState);
+    return () => window.removeEventListener("popstate", syncState);
+  }, [syncState]);
+  const navigate = import_react8.useCallback((to, options) => {
+    if (options?.replace) {
+      history.replaceState(null, "", to);
+    } else {
+      history.pushState(null, "", to);
+    }
+    syncState();
+  }, [syncState]);
   const value = import_react8.useMemo(() => ({ ...state, navigate }), [state, navigate]);
   return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV(RouterContext.Provider, {
     value,
@@ -22300,11 +22328,13 @@ function useRouter() {
   const context = import_react8.useContext(RouterContext);
   if (!context) {
     return {
-      pathname: location.pathname,
-      search: location.search,
-      navigate: (to) => {
-        history.pushState(null, "", to);
-        window.dispatchEvent(new PopStateEvent("popstate"));
+      ...currentRoute(),
+      navigate: (to, options) => {
+        if (options?.replace) {
+          history.replaceState(null, "", to);
+        } else {
+          history.pushState(null, "", to);
+        }
       }
     };
   }
@@ -22497,32 +22527,81 @@ var persistImpl = (config, baseOptions) => (set, get, api2) => {
 var persist = persistImpl;
 
 // apps/web/src/lib/desktop-state.ts
+var OPEN_APPS = [
+  "gopost",
+  "store",
+  "settings",
+  "minecraft",
+  "messenger",
+  "browser",
+  "notes",
+  "paint"
+];
+var DEFAULT_OPEN_APPS = ["gopost", "store"];
+function isOpenApp(value) {
+  return OPEN_APPS.includes(value);
+}
+function normalizeOpenApps(apps) {
+  const normalized = [];
+  for (const app of apps) {
+    if (!isOpenApp(app) || normalized.includes(app))
+      continue;
+    normalized.push(app);
+  }
+  return normalized;
+}
 var useDesktopStore = create()(persist((set) => ({
-  openApps: ["gopost", "store"],
-  activeApp: "gopost",
+  openApps: DEFAULT_OPEN_APPS,
+  recentApps: DEFAULT_OPEN_APPS,
+  activeApp: DEFAULT_OPEN_APPS[0],
   startOpen: false,
   windowPositions: {},
   openApp: (app) => set((state) => ({
     openApps: state.openApps.includes(app) ? state.openApps : [...state.openApps, app],
+    recentApps: normalizeOpenApps([
+      ...state.recentApps.filter((item) => item !== app),
+      app
+    ]),
     activeApp: app,
     startOpen: false
   })),
-  closeApp: (app) => set((state) => ({
-    openApps: state.openApps.filter((item) => item !== app),
-    activeApp: state.activeApp === app ? null : state.activeApp
-  })),
+  closeApp: (app) => set((state) => {
+    const openApps = state.openApps.filter((item) => item !== app);
+    return {
+      openApps,
+      activeApp: state.activeApp === app ? openApps[openApps.length - 1] ?? null : state.activeApp
+    };
+  }),
   setStartOpen: (startOpen) => set({ startOpen }),
   setActiveApp: (activeApp) => set({ activeApp }),
   setWindowPosition: (app, position) => set((state) => ({
     windowPositions: { ...state.windowPositions, [app]: position }
   })),
-  hydrateOpenedApps: (apps) => set({ openApps: apps })
+  hydrateDesktopState: ({ openedApps, recentApps }) => set((state) => {
+    const openApps = normalizeOpenApps(openedApps);
+    const nextRecentApps = recentApps ? normalizeOpenApps(recentApps) : state.recentApps.length ? normalizeOpenApps(state.recentApps) : openApps;
+    return {
+      openApps,
+      recentApps: nextRecentApps,
+      activeApp: state.activeApp && openApps.includes(state.activeApp) ? state.activeApp : openApps[openApps.length - 1] ?? null
+    };
+  })
 }), {
-  name: "macos-dev-desktop-state"
+  name: "macos-dev-desktop-state",
+  merge: (persistedState, currentState) => {
+    const persisted = persistedState ?? {};
+    const openApps = Array.isArray(persisted.openApps) ? normalizeOpenApps(persisted.openApps) : currentState.openApps;
+    const recentApps = Array.isArray(persisted.recentApps) ? normalizeOpenApps(persisted.recentApps) : currentState.recentApps;
+    const activeApp = typeof persisted.activeApp === "string" && isOpenApp(persisted.activeApp) ? persisted.activeApp : currentState.activeApp;
+    return {
+      ...currentState,
+      ...persisted,
+      openApps,
+      recentApps,
+      activeApp: activeApp && openApps.includes(activeApp) ? activeApp : openApps[openApps.length - 1] ?? null
+    };
+  }
 }));
-
-// apps/web/src/features/gopost/GOpostClassic.tsx
-var import_react10 = __toESM(require_react(), 1);
 
 // apps/web/src/lib/useDebounce.ts
 var import_react9 = __toESM(require_react(), 1);
@@ -22534,6 +22613,9 @@ function useDebounce(value, delay = 300) {
   }, [value, delay]);
   return debounced;
 }
+
+// apps/web/src/features/gopost/GOpostClassic.tsx
+var import_react10 = __toESM(require_react(), 1);
 
 // apps/web/src/lib/Skeleton.tsx
 var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
@@ -22643,6 +22725,15 @@ function GOpostClassic({
   const [selectedUsername, setSelectedUsername] = import_react10.useState(user?.username ?? null);
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
+  import_react10.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlView = params.get("view");
+    const urlUser = params.get("user");
+    if (urlView === "profile" && urlUser) {
+      setSelectedUsername(urlUser);
+      setView("profile");
+    }
+  }, []);
   const activeProfileUsername = view === "profile" ? selectedUsername ?? user?.username ?? null : user?.username ?? null;
   const posts = useQuery({
     queryKey: ["posts", debouncedSearch],
@@ -22769,7 +22860,7 @@ function GOpostClassic({
                   children: shownProfile?.user.displayName ?? "GOpost!"
                 }, undefined, false, undefined, this),
                 /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("p", {
-                  children: shownProfile ? `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.` : user ? `Signed in as ${user.displayName}` : "Share quick updates, big moods, and tiny internet treasures."
+                  children: shownProfile ? shownProfile.user.bio || `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.` : user ? `Signed in as ${user.displayName}` : "Share quick updates, big moods, and tiny internet treasures."
                 }, undefined, false, undefined, this),
                 profile.isError && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(ErrorNotice, {
                   error: profile.error,
@@ -23524,12 +23615,14 @@ function SettingsApp({ user }) {
   const queryClient = useQueryClient();
   const [displayName, setDisplayName] = import_react11.useState(user.displayName);
   const [avatarColor, setAvatarColor] = import_react11.useState(user.avatarColor);
+  const [bio, setBio] = import_react11.useState(user.bio ?? "");
   const [currentPassword, setCurrentPassword] = import_react11.useState("");
   const [newPassword, setNewPassword] = import_react11.useState("");
   import_react11.useEffect(() => {
     setDisplayName(user.displayName);
     setAvatarColor(user.avatarColor);
-  }, [user.avatarColor, user.displayName]);
+    setBio(user.bio ?? "");
+  }, [user.avatarColor, user.displayName, user.bio]);
   const settings = useQuery({
     queryKey: ["settings"],
     queryFn: () => api("/api/settings")
@@ -23544,7 +23637,7 @@ function SettingsApp({ user }) {
   const saveProfile = useMutation({
     mutationFn: () => api("/api/auth/profile", {
       method: "PATCH",
-      body: JSON.stringify({ displayName, avatarColor })
+      body: JSON.stringify({ displayName, avatarColor, bio })
     }),
     onSuccess: ({ user: nextUser }) => {
       queryClient.setQueryData(["session"], { user: nextUser });
@@ -23692,6 +23785,18 @@ function SettingsApp({ user }) {
                   }, undefined, false, undefined, this)
                 ]
               }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV("label", {
+                htmlFor: "settings-bio",
+                className: "grid gap-1 text-sm font-bold",
+                children: "Bio"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(Textarea, {
+                id: "settings-bio",
+                value: bio,
+                onChange: (event) => setBio(event.target.value),
+                placeholder: "Tell people about yourself...",
+                className: "min-h-[80px]"
+              }, undefined, false, undefined, this),
               saveProfile.isError && /* @__PURE__ */ jsx_dev_runtime9.jsxDEV(ErrorNotice, {
                 error: saveProfile.error
               }, undefined, false, undefined, this),
@@ -24435,7 +24540,9 @@ function NotesApp() {
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = import_react14.useState(null);
   const [draft, setDraft] = import_react14.useState({ title: "", body: "" });
+  const debouncedDraft = useDebounce(draft, 800);
   const [tab, setTab] = import_react14.useState("Edit");
+  const [filter, setFilter] = import_react14.useState("");
   const notes = useQuery({
     queryKey: ["notes"],
     queryFn: () => api("/api/notes")
@@ -24472,6 +24579,13 @@ function NotesApp() {
       setDraft({ title: note.title, body: note.body });
     }
   });
+  import_react14.useEffect(() => {
+    if (!selectedNote)
+      return;
+    if (debouncedDraft.title === selectedNote.title && debouncedDraft.body === selectedNote.body)
+      return;
+    saveNote.mutate();
+  }, [debouncedDraft]);
   const removeNote = useMutation({
     mutationFn: (noteId) => api(`/api/notes/${noteId}`, { method: "DELETE" }),
     onSuccess: (_, noteId) => {
@@ -24496,6 +24610,7 @@ function NotesApp() {
     }, undefined, false, undefined, this);
   }
   const dirty = Boolean(selectedNote) && (draft.title !== selectedNote?.title || draft.body !== selectedNote?.body);
+  const filteredNotes = notes.data.notes.filter((note) => !filter || note.title.toLowerCase().includes(filter.toLowerCase()) || note.body.toLowerCase().includes(filter.toLowerCase()));
   return /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
     className: "grid gap-3 lg:grid-cols-[220px_1fr]",
     children: [
@@ -24518,10 +24633,16 @@ function NotesApp() {
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Input, {
+            value: filter,
+            onChange: (event) => setFilter(event.target.value),
+            placeholder: "Search notes...",
+            className: "mt-2 text-sm"
+          }, undefined, false, undefined, this),
           /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
             className: "mt-3 grid gap-2",
             children: [
-              notes.data.notes.map((note) => /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("button", {
+              filteredNotes.map((note) => /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("button", {
                 type: "button",
                 className: `rounded-xl border px-3 py-2 text-left transition ${note.id === selectedNote?.id ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-white/80 hover:border-sky-200 hover:bg-sky-50/60"}`,
                 onClick: () => {
@@ -24536,12 +24657,16 @@ function NotesApp() {
                   /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
                     className: "mt-1 line-clamp-2 text-xs text-slate-500",
                     children: note.body || "Empty note"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("div", {
+                    className: "mt-0.5 text-[10px] text-slate-400",
+                    children: new Date(note.updatedAt).toLocaleDateString()
                   }, undefined, false, undefined, this)
                 ]
               }, note.id, true, undefined, this)),
-              !notes.data.notes.length && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
+              !filteredNotes.length && /* @__PURE__ */ jsx_dev_runtime13.jsxDEV("p", {
                 className: "text-sm text-slate-500",
-                children: "No notes yet. Create your first one."
+                children: filter ? "No notes match your search." : "No notes yet. Create your first one."
               }, undefined, false, undefined, this)
             ]
           }, undefined, true, undefined, this)
@@ -24576,12 +24701,16 @@ function NotesApp() {
                       type: "button",
                       onClick: () => saveNote.mutate(),
                       disabled: !dirty || saveNote.isPending,
-                      children: saveNote.isPending ? "Saving..." : "Save"
+                      children: saveNote.isPending ? "Saving..." : dirty ? "Unsaved" : "Saved"
                     }, undefined, false, undefined, this),
                     /* @__PURE__ */ jsx_dev_runtime13.jsxDEV(Button, {
                       type: "button",
                       variant: "danger",
-                      onClick: () => removeNote.mutate(selectedNote.id),
+                      onClick: () => {
+                        if (window.confirm("Delete this note?")) {
+                          removeNote.mutate(selectedNote.id);
+                        }
+                      },
                       disabled: removeNote.isPending,
                       children: "Delete"
                     }, undefined, false, undefined, this)
@@ -24647,6 +24776,7 @@ function PaintApp() {
   const [draftName, setDraftName] = import_react15.useState("Untitled Canvas");
   const [draftPixels, setDraftPixels] = import_react15.useState([]);
   const [drawing, setDrawing] = import_react15.useState(false);
+  const [undoStack, setUndoStack] = import_react15.useState([]);
   const drawings = useQuery({
     queryKey: ["paint-drawings"],
     queryFn: () => api("/api/paint/drawings")
@@ -24659,11 +24789,12 @@ function PaintApp() {
     setActiveId(active.id);
     setDraftName(active.name);
     setDraftPixels(active.pixels);
+    setUndoStack([]);
   }, [activeDrawingId]);
   import_react15.useEffect(() => {
     const stop = () => setDrawing(false);
-    window.addEventListener("mouseup", stop);
-    return () => window.removeEventListener("mouseup", stop);
+    window.addEventListener("pointerup", stop);
+    return () => window.removeEventListener("pointerup", stop);
   }, []);
   const createDrawing = useMutation({
     mutationFn: () => api("/api/paint/drawings", {
@@ -24715,6 +24846,20 @@ function PaintApp() {
   }
   const paintPixel = (index2) => {
     setDraftPixels((current) => current.map((pixel, pixelIndex) => pixelIndex === index2 ? selectedColor : pixel));
+  };
+  const startStroke = (index2) => {
+    setUndoStack((stack) => [...stack.slice(-19), [...draftPixels]]);
+    setDrawing(true);
+    paintPixel(index2);
+  };
+  const undo = () => {
+    setUndoStack((stack) => {
+      if (!stack.length)
+        return stack;
+      const previous = stack[stack.length - 1];
+      setDraftPixels(previous);
+      return stack.slice(0, -1);
+    });
   };
   const dirty = Boolean(active) && (draftName !== active?.name || draftPixels.some((pixel, index2) => pixel !== active?.pixels[index2]));
   const canvasCells = Array.from({ length: draftPixels.length }, (_, cellIndex) => ({
@@ -24792,13 +24937,32 @@ function PaintApp() {
                     /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
                       type: "button",
                       variant: "soft",
-                      onClick: () => setDraftPixels(active.pixels),
+                      onClick: undo,
+                      disabled: !undoStack.length,
+                      children: "Undo"
+                    }, undefined, false, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
+                      type: "button",
+                      variant: "soft",
+                      onClick: () => {
+                        setUndoStack((stack) => [
+                          ...stack.slice(-19),
+                          [...draftPixels]
+                        ]);
+                        setDraftPixels(active.pixels);
+                      },
                       children: "Reset"
                     }, undefined, false, undefined, this),
                     /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
                       type: "button",
                       variant: "soft",
-                      onClick: () => setDraftPixels(active.pixels.map(() => "transparent")),
+                      onClick: () => {
+                        setUndoStack((stack) => [
+                          ...stack.slice(-19),
+                          [...draftPixels]
+                        ]);
+                        setDraftPixels(active.pixels.map(() => "transparent"));
+                      },
                       children: "Clear"
                     }, undefined, false, undefined, this),
                     /* @__PURE__ */ jsx_dev_runtime14.jsxDEV(Button, {
@@ -24852,7 +25016,8 @@ function PaintApp() {
                   children: /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("div", {
                     className: "mx-auto grid w-fit gap-1",
                     style: {
-                      gridTemplateColumns: `repeat(${active.width}, minmax(0, 1fr))`
+                      gridTemplateColumns: `repeat(${active.width}, minmax(0, 1fr))`,
+                      touchAction: "none"
                     },
                     children: canvasCells.map(({ cellIndex, pixel }) => /* @__PURE__ */ jsx_dev_runtime14.jsxDEV("button", {
                       type: "button",
@@ -24860,11 +25025,8 @@ function PaintApp() {
                       style: {
                         background: pixel === "transparent" ? "#ffffff" : pixel
                       },
-                      onMouseDown: () => {
-                        setDrawing(true);
-                        paintPixel(cellIndex);
-                      },
-                      onMouseEnter: () => {
+                      onPointerDown: () => startStroke(cellIndex),
+                      onPointerEnter: () => {
                         if (drawing)
                           paintPixel(cellIndex);
                       },
@@ -25122,16 +25284,102 @@ function AppIcon({ app }) {
 
 // apps/web/src/features/desktop/StartMenu.tsx
 var jsx_dev_runtime18 = __toESM(require_jsx_dev_runtime(), 1);
+function previewText(value, fallback) {
+  const compact = value.replace(/\s+/g, " ").trim();
+  return compact || fallback;
+}
 function StartMenu({
   apps,
+  recentApps,
+  recentNote,
+  recentDrawing,
   onOpen
 }) {
   return /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Card, {
-    className: "fixed left-3 top-12 z-50 w-[calc(100vw-1.5rem)] max-w-72 p-3 shadow-glass",
+    className: "fixed left-3 top-12 z-50 w-[calc(100vw-1.5rem)] max-w-sm p-3 shadow-glass",
     children: [
       /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
         className: "border-b border-slate-200 px-2 pb-3 text-lg font-black text-ocean",
         children: "macOS Dev 3.4.6"
+      }, undefined, false, undefined, this),
+      recentApps.length > 0 && /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+        className: "mt-3",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+            className: "px-2 text-[11px] font-black uppercase tracking-wide text-slate-500",
+            children: "Recent apps"
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+            className: "mt-2 grid gap-1",
+            children: recentApps.slice(0, 3).map((app) => /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Button, {
+              variant: "ghost",
+              className: "justify-start",
+              onClick: () => onOpen(app.id),
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(AppIcon, {
+                  app: app.id
+                }, undefined, false, undefined, this),
+                "Resume ",
+                app.name
+              ]
+            }, `recent-${app.id}`, true, undefined, this))
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+        className: "mt-3 grid gap-2 px-2",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+            className: "rounded-2xl border border-slate-200 bg-slate-50/80 p-3",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "text-[11px] font-black uppercase tracking-wide text-slate-500",
+                children: "Latest note"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "mt-1 font-black text-ocean",
+                children: recentNote?.title || "No notes yet"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "mt-1 line-clamp-2 text-xs leading-5 text-slate-600",
+                children: recentNote ? previewText(recentNote.body, "Empty note") : "Open Notes Mini to jot down your next idea."
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Button, {
+                variant: "soft",
+                className: "mt-3 w-full justify-center",
+                onClick: () => onOpen("notes"),
+                children: recentNote ? "Continue in Notes" : "Open Notes Mini"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+            className: "rounded-2xl border border-slate-200 bg-slate-50/80 p-3",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "text-[11px] font-black uppercase tracking-wide text-slate-500",
+                children: "Latest canvas"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "mt-1 font-black text-ocean",
+                children: recentDrawing?.name || "No canvas yet"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+                className: "mt-1 text-xs leading-5 text-slate-600",
+                children: recentDrawing ? `${recentDrawing.width} × ${recentDrawing.height} pixels · updated ${new Date(recentDrawing.updatedAt).toLocaleDateString()}` : "Launch Pixel Paint to start a new retro canvas."
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime18.jsxDEV(Button, {
+                variant: "soft",
+                className: "mt-3 w-full justify-center",
+                onClick: () => onOpen("paint"),
+                children: recentDrawing ? "Open Pixel Paint" : "Create a Canvas"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
+        className: "mt-3 border-t border-slate-200 px-2 pt-3 text-[11px] font-black uppercase tracking-wide text-slate-500",
+        children: "Apps"
       }, undefined, false, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime18.jsxDEV("div", {
         className: "mt-2 grid gap-1",
@@ -25317,19 +25565,29 @@ function DesktopShell({ user }) {
   const queryClient = useQueryClient();
   const {
     openApps,
+    recentApps,
     activeApp,
     startOpen,
     openApp,
     closeApp,
     setStartOpen,
     setActiveApp,
-    hydrateOpenedApps,
+    hydrateDesktopState,
     windowPositions,
     setWindowPosition
   } = useDesktopStore();
   const apps = useQuery({
     queryKey: ["apps"],
     queryFn: () => api("/api/apps")
+  });
+  const syncDesktopState = useMutation({
+    mutationFn: (nextState) => api("/api/desktop/state", {
+      method: "PATCH",
+      body: JSON.stringify(nextState)
+    }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["desktop-state"], data);
+    }
   });
   const settings = useQuery({
     queryKey: ["settings"],
@@ -25343,17 +25601,89 @@ function DesktopShell({ user }) {
     queryKey: ["notifications"],
     queryFn: () => api("/api/notifications")
   });
+  const notes = useQuery({
+    queryKey: ["notes"],
+    queryFn: () => api("/api/notes")
+  });
+  const drawings = useQuery({
+    queryKey: ["paint-drawings"],
+    queryFn: () => api("/api/paint/drawings")
+  });
   const installedApps = apps.data?.apps.filter((app) => app.installed || app.id === "store") ?? [];
+  const dockAppIds = desktop.data?.desktopState.dockApps ?? [];
+  const launcherApps = import_react17.useMemo(() => {
+    const installedAppsById = new Map(installedApps.map((app) => [app.id, app]));
+    const pinnedAppIds = new Set(dockAppIds);
+    const pinnedApps = dockAppIds.map((appId) => installedAppsById.get(appId)).filter((app) => Boolean(app));
+    const extraApps = installedApps.filter((app) => !pinnedAppIds.has(app.id));
+    return [...pinnedApps, ...extraApps];
+  }, [dockAppIds, installedApps]);
   const allNotifications = notifications.data?.notifications ?? [];
   const messengerUnread = allNotifications.filter((item) => !item.read && item.type === "message").length;
   const gopostUnread = allNotifications.filter((item) => !item.read && item.type !== "message").length;
   const darkMode = settings.data?.settings.darkMode === true;
-  const openedAppsJson = JSON.stringify(desktop.data?.desktopState.openedApps) ?? null;
+  const recentNote = notes.data?.notes[0] ?? null;
+  const recentDrawing = drawings.data?.drawings[0] ?? null;
+  const serverOpenedApps = import_react17.useMemo(() => normalizeOpenApps(desktop.data?.desktopState.openedApps ?? []), [desktop.data?.desktopState.openedApps]);
+  const serverRecentApps = import_react17.useMemo(() => normalizeOpenApps(desktop.data?.desktopState.recentApps ?? desktop.data?.desktopState.openedApps ?? []), [
+    desktop.data?.desktopState.openedApps,
+    desktop.data?.desktopState.recentApps
+  ]);
+  const serverDesktopStateJson = import_react17.useMemo(() => JSON.stringify({
+    openedApps: serverOpenedApps,
+    recentApps: serverRecentApps
+  }), [serverOpenedApps, serverRecentApps]);
+  const debouncedOpenApps = useDebounce(openApps, 400);
+  const debouncedRecentApps = useDebounce(recentApps, 400);
+  const debouncedDesktopState = import_react17.useMemo(() => ({
+    openedApps: debouncedOpenApps,
+    recentApps: debouncedRecentApps
+  }), [debouncedOpenApps, debouncedRecentApps]);
+  const debouncedDesktopStateJson = import_react17.useMemo(() => JSON.stringify(debouncedDesktopState), [debouncedDesktopState]);
+  const [desktopHydrated, setDesktopHydrated] = import_react17.useState(false);
+  const lastDesktopSyncRequest = import_react17.useRef(null);
+  const recentNotePreview = recentNote ? recentNote.body.replace(/\s+/g, " ").trim() || "Empty note" : "Open Notes Mini to capture ideas, plans, and checklists.";
+  const recentDrawingSummary = recentDrawing ? `${recentDrawing.width} × ${recentDrawing.height} pixels · updated ${new Date(recentDrawing.updatedAt).toLocaleDateString()}` : "Launch Pixel Paint to start a new retro canvas.";
+  const recentAppRecords = import_react17.useMemo(() => {
+    const launcherAppsById = new Map(launcherApps.map((app) => [app.id, app]));
+    return recentApps.slice().reverse().map((appId) => launcherAppsById.get(appId)).filter((app) => Boolean(app));
+  }, [launcherApps, recentApps]);
   import_react17.useEffect(() => {
-    if (!desktop.data?.desktopState.openedApps.length)
+    if (!desktop.isSuccess || desktopHydrated)
       return;
-    hydrateOpenedApps(desktop.data.desktopState.openedApps);
-  }, [openedAppsJson]);
+    hydrateDesktopState({
+      openedApps: serverOpenedApps,
+      recentApps: serverRecentApps
+    });
+    setDesktopHydrated(true);
+  }, [
+    desktop.isSuccess,
+    desktopHydrated,
+    hydrateDesktopState,
+    serverOpenedApps,
+    serverRecentApps
+  ]);
+  import_react17.useEffect(() => {
+    if (!desktop.isSuccess || !desktopHydrated)
+      return;
+    if (debouncedDesktopStateJson === serverDesktopStateJson) {
+      lastDesktopSyncRequest.current = null;
+      return;
+    }
+    if (syncDesktopState.isPending)
+      return;
+    if (lastDesktopSyncRequest.current === debouncedDesktopStateJson)
+      return;
+    lastDesktopSyncRequest.current = debouncedDesktopStateJson;
+    syncDesktopState.mutate(debouncedDesktopState);
+  }, [
+    debouncedDesktopState,
+    debouncedDesktopStateJson,
+    desktop.isSuccess,
+    desktopHydrated,
+    serverDesktopStateJson,
+    syncDesktopState
+  ]);
   import_react17.useEffect(() => {
     const socket = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live`);
     socket.onmessage = () => {
@@ -25390,8 +25720,18 @@ function DesktopShell({ user }) {
         notifications,
         darkMode
       }, undefined, false, undefined, this),
+      syncDesktopState.isError && /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+        className: "fixed left-1/2 top-12 z-50 w-full max-w-sm -translate-x-1/2 px-3",
+        children: /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(ErrorNotice, {
+          error: syncDesktopState.error,
+          message: "Desktop session changes could not be saved."
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this),
       startOpen && /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(StartMenu, {
-        apps: installedApps,
+        apps: launcherApps,
+        recentApps: recentAppRecords,
+        recentNote,
+        recentDrawing,
         onOpen: (app) => openApp(app)
       }, undefined, false, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
@@ -25429,12 +25769,156 @@ function DesktopShell({ user }) {
                 children: "Installable Web App"
               }, undefined, false, undefined, this)
             ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+            className: "mt-4 flex flex-wrap gap-2",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                variant: "soft",
+                onClick: () => openApp("notes"),
+                children: recentNote ? "Continue writing" : "Open Notes"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                variant: "soft",
+                onClick: () => openApp("paint"),
+                children: recentDrawing ? "Open latest canvas" : "Open Paint"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                variant: "soft",
+                onClick: () => openApp("settings"),
+                children: "Edit profile"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
+        className: "mt-4 grid max-w-5xl gap-4 md:ml-5 lg:grid-cols-[1.2fr_0.8fr]",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+            className: cn("rounded-2xl border border-white/60 bg-white/25 p-4 text-white shadow-glass backdrop-blur", "dark:border-slate-600 dark:bg-slate-800/30"),
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                className: "flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                    children: [
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("h2", {
+                        className: "text-lg font-black",
+                        children: "Recent work"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("p", {
+                        className: "text-sm text-white/85",
+                        children: "Jump back into your latest notes and pixel art from the desktop."
+                      }, undefined, false, undefined, this)
+                    ]
+                  }, undefined, true, undefined, this),
+                  recentAppRecords.length > 0 && /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                    className: "flex flex-wrap gap-2 text-[11px] font-bold text-white/90",
+                    children: recentAppRecords.slice(0, 3).map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
+                      type: "button",
+                      className: "rounded-full bg-white/15 px-3 py-1 hover:bg-white/25",
+                      onClick: () => openApp(app.id),
+                      children: app.name
+                    }, `recent-chip-${app.id}`, false, undefined, this))
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                className: "mt-4 grid gap-3 sm:grid-cols-2",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
+                    type: "button",
+                    className: "rounded-2xl border border-white/20 bg-black/10 p-4 text-left transition hover:bg-black/15",
+                    onClick: () => openApp("notes"),
+                    children: [
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "text-[11px] font-black uppercase tracking-wide text-white/70",
+                        children: "Latest note"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-1 text-lg font-black",
+                        children: recentNote?.title || "No notes yet"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-2 line-clamp-3 text-sm leading-6 text-white/85",
+                        children: recentNotePreview
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-3 text-xs font-bold text-white/90",
+                        children: recentNote ? `Updated ${new Date(recentNote.updatedAt).toLocaleDateString()}` : "Create your first note"
+                      }, undefined, false, undefined, this)
+                    ]
+                  }, undefined, true, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
+                    type: "button",
+                    className: "rounded-2xl border border-white/20 bg-black/10 p-4 text-left transition hover:bg-black/15",
+                    onClick: () => openApp("paint"),
+                    children: [
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "text-[11px] font-black uppercase tracking-wide text-white/70",
+                        children: "Latest canvas"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-1 text-lg font-black",
+                        children: recentDrawing?.name || "No canvas yet"
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-2 text-sm leading-6 text-white/85",
+                        children: recentDrawingSummary
+                      }, undefined, false, undefined, this),
+                      /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                        className: "mt-3 text-xs font-bold text-white/90",
+                        children: recentDrawing ? "Open Pixel Paint" : "Start a new canvas"
+                      }, undefined, false, undefined, this)
+                    ]
+                  }, undefined, true, undefined, this)
+                ]
+              }, undefined, true, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+            className: cn("rounded-2xl border border-white/60 bg-white/25 p-4 text-white shadow-glass backdrop-blur", "dark:border-slate-600 dark:bg-slate-800/30"),
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("h2", {
+                className: "text-lg font-black",
+                children: "Desktop flow"
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("p", {
+                className: "mt-1 text-sm leading-6 text-white/85",
+                children: "Your launcher now keeps the latest apps nearby, so it is faster to jump back into notes, paint, and settings."
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                className: "mt-4 flex flex-wrap gap-2",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                    variant: "soft",
+                    onClick: () => openApp("notes"),
+                    children: "Notes Mini"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                    variant: "soft",
+                    onClick: () => openApp("paint"),
+                    children: "Pixel Paint"
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Button, {
+                    variant: "soft",
+                    onClick: () => openApp("settings"),
+                    children: "Settings"
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("div", {
+                className: "mt-4 rounded-2xl border border-white/20 bg-black/10 p-3 text-sm text-white/85",
+                children: recentAppRecords.length > 0 ? `Recently launched: ${recentAppRecords.slice(0, 4).map((app) => app.name).join(" · ")}` : "Launch an app from the dock or Start menu to build your recent activity list."
+              }, undefined, false, undefined, this)
+            ]
           }, undefined, true, undefined, this)
         ]
       }, undefined, true, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
         className: "mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden",
-        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
+        children: launcherApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("button", {
           type: "button",
           className: "rounded-2xl border border-white/45 bg-white/25 p-3 text-left text-white shadow-glass backdrop-blur",
           onClick: () => openApp(app.id),
@@ -25462,7 +25946,7 @@ function DesktopShell({ user }) {
       }, undefined, false, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime21.jsxDEV("section", {
         className: "absolute right-5 top-16 hidden gap-4 md:grid",
-        children: installedApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(DesktopIcon, {
+        children: launcherApps.map((app) => /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(DesktopIcon, {
           app,
           onOpen: () => openApp(app.id)
         }, app.id, false, undefined, this))
@@ -25494,7 +25978,7 @@ function DesktopShell({ user }) {
         })
       }, undefined, false, undefined, this),
       /* @__PURE__ */ jsx_dev_runtime21.jsxDEV(Dock, {
-        installedApps,
+        installedApps: launcherApps,
         messengerUnread,
         gopostUnread,
         onOpen: openApp
@@ -25588,6 +26072,14 @@ function App() {
     user: session.data.user
   }, undefined, false, undefined, this);
 }
+function useLiveTime() {
+  const [time, setTime] = import_react18.useState(new Date);
+  import_react18.useEffect(() => {
+    const timer = setInterval(() => setTime(new Date), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return time;
+}
 function AuthForm() {
   const queryClient2 = useQueryClient();
   const [mode, setMode] = import_react18.useState("Login");
@@ -25595,6 +26087,16 @@ function AuthForm() {
   const [displayName, setDisplayName] = import_react18.useState("");
   const [password, setPassword] = import_react18.useState("");
   const [error, setError] = import_react18.useState("");
+  const time = useLiveTime();
+  const timeString = time.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+  const dateString = time.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  });
   const auth = useMutation({
     mutationFn: () => mode === "Login" ? api("/api/auth/login", {
       method: "POST",
@@ -25607,86 +26109,137 @@ function AuthForm() {
     onError: (err) => setError(apiErrorMessage(err, "Authentication failed"))
   });
   return /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("main", {
-    className: "grid min-h-screen place-items-center bg-wallpaper p-4 font-display",
-    children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Card, {
-      className: "grid w-full max-w-sm gap-6 p-8",
-      children: [
-        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("h1", {
-              className: "text-3xl font-black text-ocean",
-              children: "macOS Dev"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("p", {
-              className: "text-sm text-slate-600",
-              children: "Version 3.4.6"
-            }, undefined, false, undefined, this)
-          ]
-        }, undefined, true, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Tabs, {
-          tabs: ["Login", "Sign Up"],
-          active: mode,
-          onChange: (tab) => {
-            setMode(tab);
-            setError("");
-          }
-        }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("form", {
-          className: "grid gap-4",
-          onSubmit: (event) => {
-            event.preventDefault();
-            auth.mutate();
-          },
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
-              htmlFor: "auth-username",
-              className: "grid gap-1 text-sm font-bold",
-              children: "Username"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
-              id: "auth-username",
-              value: username,
-              onChange: (event) => setUsername(event.target.value)
-            }, undefined, false, undefined, this),
-            mode === "Sign Up" && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(jsx_dev_runtime22.Fragment, {
-              children: [
-                /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
-                  htmlFor: "auth-display-name",
-                  className: "grid gap-1 text-sm font-bold",
-                  children: "Display Name"
-                }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
-                  id: "auth-display-name",
-                  value: displayName,
-                  onChange: (event) => setDisplayName(event.target.value)
+    className: "relative min-h-screen w-full overflow-hidden bg-gradient-to-tr from-lime-400 via-green-500 to-indigo-500 font-display selection:bg-white/30",
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("header", {
+        className: "absolute inset-x-0 top-0 flex items-center justify-end gap-3 p-3 pr-5 text-sm font-semibold text-white/90 drop-shadow-sm",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("span", {
+            children: "U.S."
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Wifi, {
+            size: 16
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(BatteryFull, {
+            size: 18
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("section", {
+        className: "mt-[12vh] flex select-none flex-col items-center text-white drop-shadow-md",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("h2", {
+            className: "text-xl font-medium tracking-wide text-white/90",
+            children: dateString
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("h1", {
+            className: "text-[7rem] font-bold leading-none tracking-tighter sm:text-[9rem]",
+            children: timeString
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("section", {
+        className: "absolute bottom-[20vh] left-1/2 flex -translate-x-1/2 flex-col items-center sm:bottom-[25vh]",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+            className: "relative mb-6",
+            children: [
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "flex h-20 w-20 items-end justify-center overflow-hidden rounded-full bg-slate-200 shadow-2xl ring-2 ring-white/20",
+                children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("svg", {
+                  className: "h-16 w-16 text-slate-400",
+                  fill: "currentColor",
+                  viewBox: "0 0 24 24",
+                  children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("path", {
+                    d: "M12 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0 2c-5.33 0-8 2.67-8 8h16c0-5.33-2.67-8-8-8z"
+                  }, undefined, false, undefined, this)
                 }, undefined, false, undefined, this)
-              ]
-            }, undefined, true, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("label", {
-              htmlFor: "auth-password",
-              className: "grid gap-1 text-sm font-bold",
-              children: "Password"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Input, {
-              id: "auth-password",
-              type: "password",
-              value: password,
-              onChange: (event) => setPassword(event.target.value)
-            }, undefined, false, undefined, this),
-            error && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
-              className: "rounded-lg bg-red-100 px-3 py-2 text-sm font-bold text-red-700",
-              children: error
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(Button, {
-              type: "submit",
-              disabled: auth.isPending,
-              children: auth.isPending ? "Working..." : mode === "Login" ? "Enter Desktop" : "Create Account"
-            }, undefined, false, undefined, this)
-          ]
-        }, undefined, true, undefined, this)
-      ]
-    }, undefined, true, undefined, this)
-  }, undefined, false, undefined, this);
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-400 bg-green-500 shadow-sm",
+                children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("svg", {
+                  className: "h-3 w-3 text-white",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: 3,
+                  viewBox: "0 0 24 24",
+                  children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("path", {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    d: "M5 13l4 4L19 7"
+                  }, undefined, false, undefined, this)
+                }, undefined, false, undefined, this)
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("form", {
+            className: "flex w-64 flex-col items-center gap-3",
+            onSubmit: (event) => {
+              event.preventDefault();
+              auth.mutate();
+            },
+            children: [
+              error && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "mb-1 w-full rounded-lg bg-red-500/80 px-3 py-1.5 text-center text-xs font-semibold text-white backdrop-blur-md",
+                children: error
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "w-full",
+                children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
+                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
+                  placeholder: "Username",
+                  value: username,
+                  onChange: (e) => setUsername(e.target.value),
+                  required: true
+                }, undefined, false, undefined, this)
+              }, undefined, false, undefined, this),
+              mode === "Sign Up" && /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "w-full",
+                children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
+                  className: "w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
+                  placeholder: "Display Name",
+                  value: displayName,
+                  onChange: (e) => setDisplayName(e.target.value),
+                  required: true
+                }, undefined, false, undefined, this)
+              }, undefined, false, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("div", {
+                className: "group relative w-full",
+                children: [
+                  /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("input", {
+                    type: "password",
+                    className: "w-full rounded-full border border-white/20 bg-white/10 py-1.5 pl-4 pr-10 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40",
+                    placeholder: mode === "Sign Up" ? "Create Password" : "Enter Password",
+                    value: password,
+                    onChange: (e) => setPassword(e.target.value),
+                    required: true
+                  }, undefined, false, undefined, this),
+                  /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
+                    type: "submit",
+                    disabled: auth.isPending,
+                    className: "absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white opacity-0 transition-opacity hover:bg-white/40 focus:opacity-100 group-hover:opacity-100 disabled:opacity-50",
+                    children: /* @__PURE__ */ jsx_dev_runtime22.jsxDEV(ChevronRight, {
+                      size: 14,
+                      strokeWidth: 3
+                    }, undefined, false, undefined, this)
+                  }, undefined, false, undefined, this)
+                ]
+              }, undefined, true, undefined, this),
+              /* @__PURE__ */ jsx_dev_runtime22.jsxDEV("button", {
+                type: "button",
+                className: "mt-3 text-[11px] font-semibold tracking-wide text-white/70 transition-colors hover:text-white",
+                onClick: () => {
+                  setMode(mode === "Login" ? "Sign Up" : "Login");
+                  setError("");
+                },
+                children: mode === "Login" ? "New? Create an account" : "Cancel sign up"
+              }, undefined, false, undefined, this)
+            ]
+          }, undefined, true, undefined, this)
+        ]
+      }, undefined, true, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
 }
 function LogoutButton() {
   const queryClient2 = useQueryClient();
@@ -25715,3 +26268,5 @@ if (rootElement) {
 export {
   LogoutButton
 };
+
+//# debugId=40DB514E68665DED64756E2164756E21

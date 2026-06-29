@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   MutationCache,
@@ -9,7 +9,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import { BatteryFull, ChevronRight, LogOut, Wifi } from "lucide-react";
 import type { Session } from "./lib/types";
 import { api, apiErrorMessage } from "./lib/api";
 import { ErrorBoundary } from "./lib/ErrorBoundary";
@@ -107,6 +107,15 @@ function App() {
   return <DesktopShell user={session.data.user} />;
 }
 
+function useLiveTime() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return time;
+}
+
 function AuthForm() {
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<"Login" | "Sign Up">("Login");
@@ -114,6 +123,17 @@ function AuthForm() {
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const time = useLiveTime();
+  const timeString = time.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const dateString = time.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   const auth = useMutation({
     mutationFn: () =>
@@ -131,79 +151,123 @@ function AuthForm() {
   });
 
   return (
-    <main className="grid min-h-screen place-items-center bg-wallpaper p-4 font-display">
-      <Card className="grid w-full max-w-sm gap-6 p-8">
-        <div>
-          <h1 className="text-3xl font-black text-ocean">macOS Dev</h1>
-          <p className="text-sm text-slate-600">Version 3.4.6</p>
+    <main className="relative min-h-screen w-full overflow-hidden bg-gradient-to-tr from-lime-400 via-green-500 to-indigo-500 font-display selection:bg-white/30">
+      {/* Top Bar */}
+      <header className="absolute inset-x-0 top-0 flex items-center justify-end gap-3 p-3 pr-5 text-sm font-semibold text-white/90 drop-shadow-sm">
+        <span>U.S.</span>
+        <Wifi size={16} />
+        <BatteryFull size={18} />
+      </header>
+
+      {/* Clock Area */}
+      <section className="mt-[12vh] flex select-none flex-col items-center text-white drop-shadow-md">
+        <h2 className="text-xl font-medium tracking-wide text-white/90">
+          {dateString}
+        </h2>
+        <h1 className="text-[7rem] font-bold leading-none tracking-tighter sm:text-[9rem]">
+          {timeString}
+        </h1>
+      </section>
+
+      {/* Login Area */}
+      <section className="absolute bottom-[20vh] left-1/2 flex -translate-x-1/2 flex-col items-center sm:bottom-[25vh]">
+        {/* Avatar */}
+        <div className="relative mb-6">
+          <div className="flex h-20 w-20 items-end justify-center overflow-hidden rounded-full bg-slate-200 shadow-2xl ring-2 ring-white/20">
+            <svg
+              className="h-16 w-16 text-slate-400"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0 2c-5.33 0-8 2.67-8 8h16c0-5.33-2.67-8-8-8z" />
+            </svg>
+          </div>
+          {/* Active green dot */}
+          <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-400 bg-green-500 shadow-sm">
+            <svg
+              className="h-3 w-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={3}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
         </div>
-        <Tabs
-          tabs={["Login", "Sign Up"]}
-          active={mode}
-          onChange={(tab) => {
-            setMode(tab as "Login" | "Sign Up");
-            setError("");
-          }}
-        />
+
+        {/* Dynamic Form */}
         <form
-          className="grid gap-4"
+          className="flex w-64 flex-col items-center gap-3"
           onSubmit={(event) => {
             event.preventDefault();
             auth.mutate();
           }}
         >
-          <label
-            htmlFor="auth-username"
-            className="grid gap-1 text-sm font-bold"
-          >
-            Username
-          </label>
-          <Input
-            id="auth-username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-          />
-          {mode === "Sign Up" && (
-            <>
-              <label
-                htmlFor="auth-display-name"
-                className="grid gap-1 text-sm font-bold"
-              >
-                Display Name
-              </label>
-              <Input
-                id="auth-display-name"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-              />
-            </>
-          )}
-          <label
-            htmlFor="auth-password"
-            className="grid gap-1 text-sm font-bold"
-          >
-            Password
-          </label>
-          <Input
-            id="auth-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
           {error && (
-            <div className="rounded-lg bg-red-100 px-3 py-2 text-sm font-bold text-red-700">
+            <div className="mb-1 w-full rounded-lg bg-red-500/80 px-3 py-1.5 text-center text-xs font-semibold text-white backdrop-blur-md">
               {error}
             </div>
           )}
-          <Button type="submit" disabled={auth.isPending}>
-            {auth.isPending
-              ? "Working..."
-              : mode === "Login"
-                ? "Enter Desktop"
-                : "Create Account"}
-          </Button>
+
+          <div className="w-full">
+            <input
+              className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          {mode === "Sign Up" && (
+            <div className="w-full">
+              <input
+                className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40"
+                placeholder="Display Name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+              />
+            </div>
+          )}
+
+          <div className="group relative w-full">
+            <input
+              type="password"
+              className="w-full rounded-full border border-white/20 bg-white/10 py-1.5 pl-4 pr-10 text-center text-sm font-semibold text-white outline-none backdrop-blur-xl transition-all placeholder:text-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40"
+              placeholder={
+                mode === "Sign Up" ? "Create Password" : "Enter Password"
+              }
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              disabled={auth.isPending}
+              className="absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white opacity-0 transition-opacity hover:bg-white/40 focus:opacity-100 group-hover:opacity-100 disabled:opacity-50"
+            >
+              <ChevronRight size={14} strokeWidth={3} />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="mt-3 text-[11px] font-semibold tracking-wide text-white/70 transition-colors hover:text-white"
+            onClick={() => {
+              setMode(mode === "Login" ? "Sign Up" : "Login");
+              setError("");
+            }}
+          >
+            {mode === "Login" ? "New? Create an account" : "Cancel sign up"}
+          </button>
         </form>
-      </Card>
+      </section>
     </main>
   );
 }
