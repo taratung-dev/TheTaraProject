@@ -53,24 +53,6 @@ SQLite is still shared for local learning, but each service has its own reposito
 - The Browser app is installed by default and can open `/gopost`.
 - External sites are previewed only when embeddable; otherwise the Browser shows metadata and an external-open action.
 
-## Development Workflow
-
-Use short-lived branches for changes and open pull requests into `main`.
-
-```powershell
-git checkout -b feature/my-change
-bun run check
-bun test
-bun run build
-```
-
-When pairing on a change, include each collaborator in the commit message with a
-GitHub-linked email address:
-
-```text
-Co-authored-by: Collaborator Name <collaborator@example.com>
-```
-
 ## Checks
 
 ```powershell
