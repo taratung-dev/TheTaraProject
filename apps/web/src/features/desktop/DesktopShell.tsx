@@ -3,7 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AppRecord,
   DesktopState,
+  Note,
   Notification,
+  PaintDrawing,
   User,
   UserSettings,
 } from "../../lib/types";
@@ -11,7 +13,7 @@ import { api } from "../../lib/api";
 import { ErrorBoundary } from "../../lib/ErrorBoundary";
 import { QueryErrorCard } from "../../lib/feedback";
 import { type OpenApp, useDesktopStore } from "../../lib/desktop-state";
-import { cn } from "../../lib/ui";
+import { Button, cn } from "../../lib/ui";
 import { appLabel, appRegistry } from "./appRegistry";
 import { MenuBar } from "./MenuBar";
 import { StartMenu } from "./StartMenu";
@@ -23,6 +25,7 @@ export function DesktopShell({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const {
     openApps,
+    recentApps,
     activeApp,
     startOpen,
     openApp,
@@ -49,6 +52,14 @@ export function DesktopShell({ user }: { user: User }) {
     queryKey: ["notifications"],
     queryFn: () => api<{ notifications: Notification[] }>("/api/notifications"),
   });
+  const notes = useQuery({
+    queryKey: ["notes"],
+    queryFn: () => api<{ notes: Note[] }>("/api/notes"),
+  });
+  const drawings = useQuery({
+    queryKey: ["paint-drawings"],
+    queryFn: () => api<{ drawings: PaintDrawing[] }>("/api/paint/drawings"),
+  });
 
   const installedApps =
     apps.data?.apps.filter((app) => app.installed || app.id === "store") ?? [];
@@ -62,6 +73,20 @@ export function DesktopShell({ user }: { user: User }) {
   ).length;
 
   const darkMode = settings.data?.settings.darkMode === true;
+
+  const recentNote = notes.data?.notes[0] ?? null;
+  const recentDrawing = drawings.data?.drawings[0] ?? null;
+  const recentNotePreview = recentNote
+    ? recentNote.body.replace(/\s+/g, " ").trim() || "Empty note"
+    : "Open Notes Mini to capture ideas, plans, and checklists.";
+  const recentDrawingSummary = recentDrawing
+    ? `${recentDrawing.width} × ${recentDrawing.height} pixels · updated ${new Date(recentDrawing.updatedAt).toLocaleDateString()}`
+    : "Launch Pixel Paint to start a new retro canvas.";
+  const recentAppRecords = recentApps
+    .slice()
+    .reverse()
+    .map((appId) => installedApps.find((app) => app.id === appId))
+    .filter((app): app is AppRecord => Boolean(app));
 
   const openedAppsJson =
     JSON.stringify(desktop.data?.desktopState.openedApps) ?? null;
@@ -124,6 +149,9 @@ export function DesktopShell({ user }: { user: User }) {
       {startOpen && (
         <StartMenu
           apps={installedApps}
+          recentApps={recentAppRecords}
+          recentNote={recentNote}
+          recentDrawing={recentDrawing}
           onOpen={(app) => openApp(app as OpenApp)}
         />
       )}
@@ -151,6 +179,122 @@ export function DesktopShell({ user }: { user: User }) {
           <span className="rounded-full bg-white/20 px-3 py-1">
             Installable Web App
           </span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="soft" onClick={() => openApp("notes")}>
+            {recentNote ? "Continue writing" : "Open Notes"}
+          </Button>
+          <Button variant="soft" onClick={() => openApp("paint")}>
+            {recentDrawing ? "Open latest canvas" : "Open Paint"}
+          </Button>
+          <Button variant="soft" onClick={() => openApp("settings")}>
+            Edit profile
+          </Button>
+        </div>
+      </section>
+
+      <section className="mt-4 grid max-w-5xl gap-4 md:ml-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <div
+          className={cn(
+            "rounded-2xl border border-white/60 bg-white/25 p-4 text-white shadow-glass backdrop-blur",
+            "dark:border-slate-600 dark:bg-slate-800/30",
+          )}
+        >
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-lg font-black">Recent work</h2>
+              <p className="text-sm text-white/85">
+                Jump back into your latest notes and pixel art from the desktop.
+              </p>
+            </div>
+            {recentAppRecords.length > 0 && (
+              <div className="flex flex-wrap gap-2 text-[11px] font-bold text-white/90">
+                {recentAppRecords.slice(0, 3).map((app) => (
+                  <button
+                    key={`recent-chip-${app.id}`}
+                    type="button"
+                    className="rounded-full bg-white/15 px-3 py-1 hover:bg-white/25"
+                    onClick={() => openApp(app.id as OpenApp)}
+                  >
+                    {app.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              className="rounded-2xl border border-white/20 bg-black/10 p-4 text-left transition hover:bg-black/15"
+              onClick={() => openApp("notes")}
+            >
+              <div className="text-[11px] font-black uppercase tracking-wide text-white/70">
+                Latest note
+              </div>
+              <div className="mt-1 text-lg font-black">
+                {recentNote?.title || "No notes yet"}
+              </div>
+              <div className="mt-2 line-clamp-3 text-sm leading-6 text-white/85">
+                {recentNotePreview}
+              </div>
+              <div className="mt-3 text-xs font-bold text-white/90">
+                {recentNote
+                  ? `Updated ${new Date(recentNote.updatedAt).toLocaleDateString()}`
+                  : "Create your first note"}
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className="rounded-2xl border border-white/20 bg-black/10 p-4 text-left transition hover:bg-black/15"
+              onClick={() => openApp("paint")}
+            >
+              <div className="text-[11px] font-black uppercase tracking-wide text-white/70">
+                Latest canvas
+              </div>
+              <div className="mt-1 text-lg font-black">
+                {recentDrawing?.name || "No canvas yet"}
+              </div>
+              <div className="mt-2 text-sm leading-6 text-white/85">
+                {recentDrawingSummary}
+              </div>
+              <div className="mt-3 text-xs font-bold text-white/90">
+                {recentDrawing ? "Open Pixel Paint" : "Start a new canvas"}
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={cn(
+            "rounded-2xl border border-white/60 bg-white/25 p-4 text-white shadow-glass backdrop-blur",
+            "dark:border-slate-600 dark:bg-slate-800/30",
+          )}
+        >
+          <h2 className="text-lg font-black">Desktop flow</h2>
+          <p className="mt-1 text-sm leading-6 text-white/85">
+            Your launcher now keeps the latest apps nearby, so it is faster to
+            jump back into notes, paint, and settings.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button variant="soft" onClick={() => openApp("notes")}>
+              Notes Mini
+            </Button>
+            <Button variant="soft" onClick={() => openApp("paint")}>
+              Pixel Paint
+            </Button>
+            <Button variant="soft" onClick={() => openApp("settings")}>
+              Settings
+            </Button>
+          </div>
+          <div className="mt-4 rounded-2xl border border-white/20 bg-black/10 p-3 text-sm text-white/85">
+            {recentAppRecords.length > 0
+              ? `Recently launched: ${recentAppRecords
+                  .slice(0, 4)
+                  .map((app) => app.name)
+                  .join(" · ")}`
+              : "Launch an app from the dock or Start menu to build your recent activity list."}
+          </div>
         </div>
       </section>
 

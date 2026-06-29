@@ -20,6 +20,7 @@ export type WindowPosition = {
 
 type DesktopStore = {
   openApps: OpenApp[];
+  recentApps: OpenApp[];
   activeApp: OpenApp | null;
   startOpen: boolean;
   windowPositions: Partial<Record<OpenApp, WindowPosition>>;
@@ -35,6 +36,7 @@ export const useDesktopStore = create<DesktopStore>()(
   persist(
     (set) => ({
       openApps: ["gopost", "store"],
+      recentApps: ["gopost", "store"],
       activeApp: "gopost",
       startOpen: false,
       windowPositions: {},
@@ -43,6 +45,7 @@ export const useDesktopStore = create<DesktopStore>()(
           openApps: state.openApps.includes(app)
             ? state.openApps
             : [...state.openApps, app],
+          recentApps: [...state.recentApps.filter((item) => item !== app), app],
           activeApp: app,
           startOpen: false,
         })),
@@ -57,7 +60,13 @@ export const useDesktopStore = create<DesktopStore>()(
         set((state) => ({
           windowPositions: { ...state.windowPositions, [app]: position },
         })),
-      hydrateOpenedApps: (apps) => set({ openApps: apps as OpenApp[] }),
+      hydrateOpenedApps: (apps) =>
+        set((state) => ({
+          openApps: apps as OpenApp[],
+          recentApps: state.recentApps.length
+            ? state.recentApps
+            : (apps as OpenApp[]),
+        })),
     }),
     {
       name: "macos-dev-desktop-state",
