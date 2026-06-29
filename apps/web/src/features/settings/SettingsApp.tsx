@@ -4,7 +4,7 @@ import type { User, UserSettings } from "../../lib/types";
 import { api } from "../../lib/api";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { SkeletonCard } from "../../lib/Skeleton";
-import { Button, Card, Input, Switch } from "../../lib/ui";
+import { Button, Card, Input, Switch, Textarea } from "../../lib/ui";
 
 const avatarColors = [
   "#2f80ed",
@@ -19,13 +19,15 @@ export function SettingsApp({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const [displayName, setDisplayName] = useState(user.displayName);
   const [avatarColor, setAvatarColor] = useState(user.avatarColor);
+  const [bio, setBio] = useState(user.bio ?? "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
   useEffect(() => {
     setDisplayName(user.displayName);
     setAvatarColor(user.avatarColor);
-  }, [user.avatarColor, user.displayName]);
+    setBio(user.bio ?? "");
+  }, [user.avatarColor, user.displayName, user.bio]);
 
   const settings = useQuery({
     queryKey: ["settings"],
@@ -45,7 +47,7 @@ export function SettingsApp({ user }: { user: User }) {
     mutationFn: () =>
       api<{ user: User }>("/api/auth/profile", {
         method: "PATCH",
-        body: JSON.stringify({ displayName, avatarColor }),
+        body: JSON.stringify({ displayName, avatarColor, bio }),
       }),
     onSuccess: ({ user: nextUser }) => {
       queryClient.setQueryData(["session"], { user: nextUser });
@@ -173,6 +175,19 @@ export function SettingsApp({ user }: { user: User }) {
               ))}
             </div>
           </div>
+          <label
+            htmlFor="settings-bio"
+            className="grid gap-1 text-sm font-bold"
+          >
+            Bio
+          </label>
+          <Textarea
+            id="settings-bio"
+            value={bio}
+            onChange={(event) => setBio(event.target.value)}
+            placeholder="Tell people about yourself..."
+            className="min-h-[80px]"
+          />
           {saveProfile.isError && <ErrorNotice error={saveProfile.error} />}
           <Button
             type="button"

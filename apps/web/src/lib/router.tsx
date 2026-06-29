@@ -2,8 +2,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
-  useSyncExternalStore,
+  useState,
   type ReactNode,
 } from "react";
 
@@ -12,31 +13,49 @@ type RouterState = {
   search: string;
 };
 
+type NavigateOptions = { replace?: boolean };
+
 type RouterContextValue = RouterState & {
-  navigate: (to: string) => void;
+  navigate: (to: string, options?: NavigateOptions) => void;
 };
 
 const RouterContext = createContext<RouterContextValue | null>(null);
 
-function getSnapshot(): RouterState {
+function currentRoute(): RouterState {
   return {
     pathname: location.pathname,
     search: location.search,
   };
 }
 
-function subscribe(callback: () => void) {
-  window.addEventListener("popstate", callback);
-  return () => window.removeEventListener("popstate", callback);
-}
-
 export function Router({ children }: { children: ReactNode }) {
-  const state = useSyncExternalStore(subscribe, getSnapshot);
+  const [state, setState] = useState(currentRoute);
 
-  const navigate = useCallback((to: string) => {
-    history.pushState(null, "", to);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+  const syncState = useCallback(() => {
+    const next = currentRoute();
+    setState((current) =>
+      current.pathname === next.pathname && current.search === next.search
+        ? current
+        : next,
+    );
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("popstate", syncState);
+    return () => window.removeEventListener("popstate", syncState);
+  }, [syncState]);
+
+  const navigate = useCallback(
+    (to: string, options?: NavigateOptions) => {
+      if (options?.replace) {
+        history.replaceState(null, "", to);
+      } else {
+        history.pushState(null, "", to);
+      }
+      syncState();
+    },
+    [syncState],
+  );
 
   const value = useMemo(() => ({ ...state, navigate }), [state, navigate]);
 
@@ -45,15 +64,24 @@ export function Router({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Returns the current route state and a `navigate` function.
+ *
+ * When called outside a `<Router>` provider this returns a **static snapshot**
+ * of `location` at call-time and a `navigate` that updates the URL but will
+ * NOT trigger a React re-render. Prefer wrapping your tree in `<Router>`.
+ */
 export function useRouter(): RouterContextValue {
   const context = useContext(RouterContext);
   if (!context) {
     return {
-      pathname: location.pathname,
-      search: location.search,
-      navigate: (to: string) => {
-        history.pushState(null, "", to);
-        window.dispatchEvent(new PopStateEvent("popstate"));
+      ...currentRoute(),
+      navigate: (to: string, options?: NavigateOptions) => {
+        if (options?.replace) {
+          history.replaceState(null, "", to);
+        } else {
+          history.pushState(null, "", to);
+        }
       },
     };
   }

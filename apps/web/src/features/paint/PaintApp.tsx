@@ -41,6 +41,7 @@ export function PaintApp() {
   const [draftName, setDraftName] = useState("Untitled Canvas");
   const [draftPixels, setDraftPixels] = useState<string[]>([]);
   const [drawing, setDrawing] = useState(false);
+  const [undoStack, setUndoStack] = useState<string[][]>([]);
 
   const drawings = useQuery({
     queryKey: ["paint-drawings"],
@@ -59,13 +60,14 @@ export function PaintApp() {
     setActiveId(active.id);
     setDraftName(active.name);
     setDraftPixels(active.pixels);
+    setUndoStack([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDrawingId]);
 
   useEffect(() => {
     const stop = () => setDrawing(false);
-    window.addEventListener("mouseup", stop);
-    return () => window.removeEventListener("mouseup", stop);
+    window.addEventListener("pointerup", stop);
+    return () => window.removeEventListener("pointerup", stop);
   }, []);
 
   const createDrawing = useMutation({
@@ -140,6 +142,21 @@ export function PaintApp() {
     );
   };
 
+  const startStroke = (index: number) => {
+    setUndoStack((stack) => [...stack.slice(-19), [...draftPixels]]);
+    setDrawing(true);
+    paintPixel(index);
+  };
+
+  const undo = () => {
+    setUndoStack((stack) => {
+      if (!stack.length) return stack;
+      const previous = stack[stack.length - 1];
+      setDraftPixels(previous);
+      return stack.slice(0, -1);
+    });
+  };
+
   const dirty =
     Boolean(active) &&
     (draftName !== active?.name ||
@@ -212,16 +229,34 @@ export function PaintApp() {
                 <Button
                   type="button"
                   variant="soft"
-                  onClick={() => setDraftPixels(active.pixels)}
+                  onClick={undo}
+                  disabled={!undoStack.length}
+                >
+                  Undo
+                </Button>
+                <Button
+                  type="button"
+                  variant="soft"
+                  onClick={() => {
+                    setUndoStack((stack) => [
+                      ...stack.slice(-19),
+                      [...draftPixels],
+                    ]);
+                    setDraftPixels(active.pixels);
+                  }}
                 >
                   Reset
                 </Button>
                 <Button
                   type="button"
                   variant="soft"
-                  onClick={() =>
-                    setDraftPixels(active.pixels.map(() => "transparent"))
-                  }
+                  onClick={() => {
+                    setUndoStack((stack) => [
+                      ...stack.slice(-19),
+                      [...draftPixels],
+                    ]);
+                    setDraftPixels(active.pixels.map(() => "transparent"));
+                  }}
                 >
                   Clear
                 </Button>
@@ -278,6 +313,7 @@ export function PaintApp() {
                   className="mx-auto grid w-fit gap-1"
                   style={{
                     gridTemplateColumns: `repeat(${active.width}, minmax(0, 1fr))`,
+                    touchAction: "none",
                   }}
                 >
                   {canvasCells.map(({ cellIndex, pixel }) => (
@@ -288,11 +324,8 @@ export function PaintApp() {
                       style={{
                         background: pixel === "transparent" ? "#ffffff" : pixel,
                       }}
-                      onMouseDown={() => {
-                        setDrawing(true);
-                        paintPixel(cellIndex);
-                      }}
-                      onMouseEnter={() => {
+                      onPointerDown={() => startStroke(cellIndex)}
+                      onPointerEnter={() => {
                         if (drawing) paintPixel(cellIndex);
                       }}
                       aria-label={`Pixel ${cellIndex + 1}`}

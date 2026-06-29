@@ -5,6 +5,7 @@ export type UserRow = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
 };
 
 export type PostJoinRow = {
@@ -16,6 +17,7 @@ export type PostJoinRow = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
   likeCount: number;
   commentCount: number;
   likedByMe: number;
@@ -30,6 +32,7 @@ export type CommentJoinRow = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
 };
 
 export const db = openServiceDb();
@@ -169,7 +172,7 @@ export function postRows(
       .query(
         `
     SELECT p.id, p.body, p.image_style AS imageStyle, p.created_at AS createdAt,
-      u.id AS authorId, u.username, u.display_name AS displayName, u.avatar_color AS avatarColor,
+      u.id AS authorId, u.username, u.display_name AS displayName, u.avatar_color AS avatarColor, COALESCE(u.bio, '') AS bio,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS likeCount,
       (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS commentCount,
       EXISTS(SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = ?) AS likedByMe
@@ -189,6 +192,7 @@ export function postRows(
       username: row.username,
       displayName: row.displayName,
       avatarColor: row.avatarColor,
+      bio: row.bio,
     },
     likeCount: row.likeCount,
     commentCount: row.commentCount,
@@ -203,7 +207,7 @@ export function commentsForPost(postId: number) {
       .query(
         `
     SELECT c.id, c.post_id AS postId, c.body, c.created_at AS createdAt,
-      u.id AS authorId, u.username, u.display_name AS displayName, u.avatar_color AS avatarColor
+      u.id AS authorId, u.username, u.display_name AS displayName, u.avatar_color AS avatarColor, COALESCE(u.bio, '') AS bio
     FROM comments c JOIN users u ON u.id = c.author_id
     WHERE c.post_id = ?
     ORDER BY c.id
@@ -220,6 +224,7 @@ export function commentsForPost(postId: number) {
       username: row.username,
       displayName: row.displayName,
       avatarColor: row.avatarColor,
+      bio: row.bio,
     },
   }));
 }
@@ -228,7 +233,7 @@ export function allUsers() {
   return db
     .query(
       `
-      SELECT id, username, display_name AS displayName, avatar_color AS avatarColor
+      SELECT id, username, display_name AS displayName, avatar_color AS avatarColor, COALESCE(bio, '') AS bio
       FROM users
       ORDER BY display_name COLLATE NOCASE
     `,
@@ -239,7 +244,7 @@ export function allUsers() {
 export function profile(username: string, viewerId: number | null = null) {
   const user = db
     .query(
-      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor FROM users WHERE username = ?",
+      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor, COALESCE(bio, '') AS bio FROM users WHERE username = ?",
     )
     .get(username) as UserRow | null;
   if (!user) return null;

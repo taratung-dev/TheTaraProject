@@ -6,6 +6,7 @@ export type UserRow = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
 };
 
 export type UserWithPassword = {
@@ -13,6 +14,7 @@ export type UserWithPassword = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
   passwordHash: string;
 };
 
@@ -35,6 +37,12 @@ export function migrateAuth() {
       expires_at TEXT NOT NULL
     );
   `);
+
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN bio TEXT NOT NULL DEFAULT ''");
+  } catch {
+    // Column already exists.
+  }
 }
 
 export async function seedAuth() {
@@ -64,7 +72,7 @@ export function newToken() {
 export function userById(id: number) {
   return db
     .query(
-      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor FROM users WHERE id = ?",
+      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor, COALESCE(bio, '') AS bio FROM users WHERE id = ?",
     )
     .get(id) as UserRow | null;
 }
@@ -72,7 +80,7 @@ export function userById(id: number) {
 export function userByUsername(username: string) {
   return db
     .query(
-      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor, password_hash AS passwordHash FROM users WHERE username = ?",
+      "SELECT id, username, display_name AS displayName, avatar_color AS avatarColor, COALESCE(bio, '') AS bio, password_hash AS passwordHash FROM users WHERE username = ?",
     )
     .get(username.toLowerCase()) as UserWithPassword | null;
 }
@@ -119,11 +127,11 @@ export function createUser(
 
 export function updateUserProfile(
   userId: number,
-  input: { displayName: string; avatarColor: string },
+  input: { displayName: string; avatarColor: string; bio: string },
 ) {
   db.prepare(
-    "UPDATE users SET display_name = ?, avatar_color = ? WHERE id = ?",
-  ).run(input.displayName, input.avatarColor, userId);
+    "UPDATE users SET display_name = ?, avatar_color = ?, bio = ? WHERE id = ?",
+  ).run(input.displayName, input.avatarColor, input.bio, userId);
   return userById(userId);
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Note } from "../../lib/types";
 import { api } from "../../lib/api";
+import { useDebounce } from "../../lib/useDebounce";
 import { ErrorNotice, QueryErrorCard } from "../../lib/feedback";
 import { SkeletonCard } from "../../lib/Skeleton";
 import { Button, Card, Input, Tabs, Textarea } from "../../lib/ui";
@@ -51,7 +52,9 @@ export function NotesApp() {
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState({ title: "", body: "" });
+  const debouncedDraft = useDebounce(draft, 800);
   const [tab, setTab] = useState<"Edit" | "Preview">("Edit");
+  const [filter, setFilter] = useState("");
 
   const notes = useQuery({
     queryKey: ["notes"],
@@ -102,6 +105,17 @@ export function NotesApp() {
     },
   });
 
+  useEffect(() => {
+    if (!selectedNote) return;
+    if (
+      debouncedDraft.title === selectedNote.title &&
+      debouncedDraft.body === selectedNote.body
+    )
+      return;
+    saveNote.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedDraft]);
+
   const removeNote = useMutation({
     mutationFn: (noteId: number) =>
       api(`/api/notes/${noteId}`, { method: "DELETE" }),
@@ -132,6 +146,13 @@ export function NotesApp() {
     Boolean(selectedNote) &&
     (draft.title !== selectedNote?.title || draft.body !== selectedNote?.body);
 
+  const filteredNotes = notes.data.notes.filter(
+    (note) =>
+      !filter ||
+      note.title.toLowerCase().includes(filter.toLowerCase()) ||
+      note.body.toLowerCase().includes(filter.toLowerCase()),
+  );
+
   return (
     <div className="grid gap-3 lg:grid-cols-[220px_1fr]">
       <Card className="p-3">
@@ -146,8 +167,14 @@ export function NotesApp() {
             {createNote.isPending ? "Adding..." : "New Note"}
           </Button>
         </div>
+        <Input
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          placeholder="Search notes..."
+          className="mt-2 text-sm"
+        />
         <div className="mt-3 grid gap-2">
-          {notes.data.notes.map((note) => (
+          {filteredNotes.map((note) => (
             <button
               key={note.id}
               type="button"
@@ -167,11 +194,16 @@ export function NotesApp() {
               <div className="mt-1 line-clamp-2 text-xs text-slate-500">
                 {note.body || "Empty note"}
               </div>
+              <div className="mt-0.5 text-[10px] text-slate-400">
+                {new Date(note.updatedAt).toLocaleDateString()}
+              </div>
             </button>
           ))}
-          {!notes.data.notes.length && (
+          {!filteredNotes.length && (
             <p className="text-sm text-slate-500">
-              No notes yet. Create your first one.
+              {filter
+                ? "No notes match your search."
+                : "No notes yet. Create your first one."}
             </p>
           )}
         </div>
@@ -203,12 +235,20 @@ export function NotesApp() {
                   onClick={() => saveNote.mutate()}
                   disabled={!dirty || saveNote.isPending}
                 >
-                  {saveNote.isPending ? "Saving..." : "Save"}
+                  {saveNote.isPending
+                    ? "Saving..."
+                    : dirty
+                      ? "Unsaved"
+                      : "Saved"}
                 </Button>
                 <Button
                   type="button"
                   variant="danger"
-                  onClick={() => removeNote.mutate(selectedNote.id)}
+                  onClick={() => {
+                    if (window.confirm("Delete this note?")) {
+                      removeNote.mutate(selectedNote.id);
+                    }
+                  }}
                   disabled={removeNote.isPending}
                 >
                   Delete

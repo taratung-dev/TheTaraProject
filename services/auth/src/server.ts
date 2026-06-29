@@ -143,6 +143,7 @@ const routes: Route[] = [
       const input = await body<{
         displayName?: string;
         avatarColor?: string;
+        bio?: string;
         currentPassword?: string;
         newPassword?: string;
       }>(request);
@@ -154,7 +155,8 @@ const routes: Route[] = [
 
       const wantsProfileUpdate =
         typeof input.displayName === "string" ||
-        typeof input.avatarColor === "string";
+        typeof input.avatarColor === "string" ||
+        typeof input.bio === "string";
       const wantsPasswordUpdate =
         typeof input.newPassword === "string" && input.newPassword.length > 0;
 
@@ -164,12 +166,13 @@ const routes: Route[] = [
       if (wantsProfileUpdate) {
         const displayName = input.displayName?.trim() ?? current.displayName;
         const avatarColor = input.avatarColor?.trim() ?? current.avatarColor;
+        const bio = input.bio ?? current.bio;
         const validColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(avatarColor);
         if (!displayName)
           return json({ error: "Display name is required." }, 400);
         if (!validColor)
           return json({ error: "Avatar color must be a hex color." }, 400);
-        updateUserProfile(userId!, { displayName, avatarColor });
+        updateUserProfile(userId!, { displayName, avatarColor, bio });
       }
 
       if (wantsPasswordUpdate) {

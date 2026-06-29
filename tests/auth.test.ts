@@ -87,13 +87,18 @@ describe("auth service", () => {
   });
 
   test("profile updates persist display name and avatar color", () => {
-    updateUserProfile(1, { displayName: "Tara Dev", avatarColor: "#8b5cf6" });
+    updateUserProfile(1, {
+      displayName: "Tara Dev",
+      avatarColor: "#8b5cf6",
+      bio: "",
+    });
 
     expect(userById(1)).toEqual({
       id: 1,
       username: "demo",
       displayName: "Tara Dev",
       avatarColor: "#8b5cf6",
+      bio: "",
     });
   });
 

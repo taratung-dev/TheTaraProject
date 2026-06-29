@@ -150,4 +150,53 @@ describe("platform service storage", () => {
     expect(deleteDrawing(1, drawing.id)).toBe(1);
     expect(listDrawings(1).some((item) => item.id === drawing.id)).toBe(false);
   });
+
+  test("note title is trimmed and capped at 200 characters", () => {
+    const longTitle = "A".repeat(250);
+    const note = createNote(1, { title: longTitle, body: "short" });
+    expect(note.title.length).toBeLessThanOrEqual(200);
+    expect(note.title).toBe("A".repeat(200));
+  });
+
+  test("note body is capped at 10000 characters", () => {
+    const longBody = "B".repeat(12000);
+    const note = createNote(1, { title: "Big Note", body: longBody });
+    expect(note.body.length).toBeLessThanOrEqual(10000);
+  });
+
+  test("drawing name is trimmed and capped at 100 characters", () => {
+    const longName = "C".repeat(150);
+    const drawing = createDrawing(1, { name: longName });
+    expect(drawing.name.length).toBeLessThanOrEqual(100);
+  });
+
+  test("user cannot update another user's note", () => {
+    const note = createNote(1, { title: "Private", body: "mine" });
+    const result = updateNote(2, note.id, { title: "Hacked" });
+    expect(result).toBeNull();
+    const original = listNotes(1).find((n) => n.id === note.id);
+    expect(original?.title).toBe("Private");
+  });
+
+  test("user cannot delete another user's note", () => {
+    const note = createNote(1, { title: "Keep", body: "safe" });
+    const deleted = deleteNote(2, note.id);
+    expect(deleted).toBe(0);
+    expect(listNotes(1).some((n) => n.id === note.id)).toBe(true);
+  });
+
+  test("user cannot update another user's drawing", () => {
+    const drawing = createDrawing(1, { name: "My Art" });
+    const result = updateDrawing(2, drawing.id, { name: "Stolen" });
+    expect(result).toBeNull();
+    const original = listDrawings(1).find((d) => d.id === drawing.id);
+    expect(original?.name).toBe("My Art");
+  });
+
+  test("user cannot delete another user's drawing", () => {
+    const drawing = createDrawing(1, { name: "Protected" });
+    const deleted = deleteDrawing(2, drawing.id);
+    expect(deleted).toBe(0);
+    expect(listDrawings(1).some((d) => d.id === drawing.id)).toBe(true);
+  });
 });

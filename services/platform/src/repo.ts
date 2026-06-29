@@ -328,7 +328,11 @@ export function createNote(
       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
     `,
     )
-    .run(userId, input.title?.trim() || "Untitled Note", input.body ?? "");
+    .run(
+      userId,
+      (input.title?.trim() || "Untitled Note").slice(0, 200),
+      (input.body ?? "").slice(0, 10000),
+    );
   return db
     .query(
       "SELECT id, title, body, updated_at AS updatedAt FROM notes WHERE id = ?",
@@ -352,8 +356,8 @@ export function updateNote(
       WHERE id = ? AND user_id = ?
     `,
   ).run(
-    input.title?.trim() || current.title,
-    input.body ?? current.body,
+    (input.title?.trim() || current.title).slice(0, 200),
+    (input.body ?? current.body).slice(0, 10000),
     noteId,
     userId,
   );
@@ -406,7 +410,7 @@ export function createDrawing(
     )
     .run(
       userId,
-      input.name?.trim() || "Untitled Canvas",
+      (input.name?.trim() || "Untitled Canvas").slice(0, 100),
       width,
       height,
       JSON.stringify(pixels),
@@ -443,7 +447,7 @@ export function updateDrawing(
       WHERE id = ? AND user_id = ?
     `,
   ).run(
-    input.name?.trim() || current.name,
+    (input.name?.trim() || current.name).slice(0, 100),
     width,
     height,
     JSON.stringify(pixels),

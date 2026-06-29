@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Comment, Post, Profile, User } from "../../lib/types";
 import type { OpenApp } from "../../lib/desktop-state";
@@ -55,6 +55,17 @@ export function GOpostClassic({
   );
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
+
+  // Read initial profile deep link from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlView = params.get("view");
+    const urlUser = params.get("user");
+    if (urlView === "profile" && urlUser) {
+      setSelectedUsername(urlUser);
+      setView("profile");
+    }
+  }, []);
 
   const activeProfileUsername =
     view === "profile"
@@ -187,7 +198,8 @@ export function GOpostClassic({
             <h1>{shownProfile?.user.displayName ?? "GOpost!"}</h1>
             <p>
               {shownProfile
-                ? `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.`
+                ? shownProfile.user.bio ||
+                  `@${shownProfile.user.username} is sharing quick updates, throwback moods, and little internet treasures.`
                 : user
                   ? `Signed in as ${user.displayName}`
                   : "Share quick updates, big moods, and tiny internet treasures."}

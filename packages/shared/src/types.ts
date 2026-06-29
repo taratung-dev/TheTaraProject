@@ -3,6 +3,7 @@ export type User = {
   username: string;
   displayName: string;
   avatarColor: string;
+  bio: string;
 };
 
 export type Session = {
