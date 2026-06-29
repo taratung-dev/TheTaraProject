@@ -21,6 +21,79 @@
 }
 
 @layer utilities {
+    .auth-animated-wallpaper {
+        background:
+            radial-gradient(
+                circle at 18% 78%,
+                rgba(190, 242, 100, 0.78),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 68% 18%,
+                rgba(129, 140, 248, 0.82),
+                transparent 30%
+            ),
+            radial-gradient(
+                circle at 24% 16%,
+                rgba(248, 113, 113, 0.82),
+                transparent 26%
+            ),
+            radial-gradient(
+                circle at 78% 82%,
+                rgba(34, 197, 94, 0.7),
+                transparent 28%
+            ),
+            linear-gradient(135deg, #14532d 0%, #84cc16 42%, #6366f1 100%);
+        background-size: 140% 140%;
+        animation: auth-wallpaper-drift 18s ease-in-out infinite alternate;
+    }
+
+    .auth-shake {
+        animation: auth-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    @keyframes auth-wallpaper-drift {
+        0% {
+            background-position: 0% 45%;
+            filter: saturate(1.05);
+        }
+
+        100% {
+            background-position: 100% 55%;
+            filter: saturate(1.18);
+        }
+    }
+
+    @keyframes auth-shake {
+        10%,
+        90% {
+            transform: translateX(-1px);
+        }
+
+        20%,
+        80% {
+            transform: translateX(3px);
+        }
+
+        30%,
+        50%,
+        70% {
+            transform: translateX(-6px);
+        }
+
+        40%,
+        60% {
+            transform: translateX(6px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .auth-animated-wallpaper,
+        .auth-shake {
+            animation: none;
+        }
+    }
+
     .bg-wallpaper {
         background:
             radial-gradient(
